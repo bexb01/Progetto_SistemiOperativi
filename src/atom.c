@@ -1,9 +1,17 @@
 //include e define
 #define _GNU_SOURCE
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <time.h>
 #include <errno.h>
 
 /*struct statistics {
@@ -45,16 +53,16 @@ int main(int argc, char *argv[]){
 	
 	      //SCOMMENTARE PER SCINDERE
     int min_atomic_n = 20;
-	if (atomic_number >= min_atomic_n){
-    printf("atomo si sta per scindere.\n");
-	atomic_number=split(atomic_number); //gli passiamo n atomico padre
-    printf("scissione avvenuta.\n");
-    } else { //se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
+	/*if*/ while (atomic_number >= min_atomic_n){
+    	printf("atomo si sta per scindere.\n");
+		atomic_number=split(atomic_number); //gli passiamo n atomico padre
+    	printf("scissione avvenuta.\n");
+    } //else { //se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
 		printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
-    		exit(0);
-	}
-	int n_sec = 30;
-	n_sec=(n_sec);
+    	exit(0);
+	//}//se c'è hwile in teoria non arriviamo mai qui, se c'è if arriviamo sempre qui
+	int n_sec = 15;
+	exit_n_sec(n_sec);
 
 	
 }

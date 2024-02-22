@@ -2,11 +2,18 @@
 //tutti include e define
 #define _GNU_SOURCE
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 /*struct data{//è una struttura dati contipi che sono a loro volta strutture dati in mem condivisa o qualcosa del genere
 	shm_data_t *data
@@ -18,15 +25,17 @@ void nsleep(long step_nsec);
 
 int main(int argc, char *argv[]){
 	long step_nsec;
-	step_nsec = 5000000000;//dovremmo leggerli da mem condivisa  ho messo 5 secondo
+	step_nsec = 50000000000;//dovremmo leggerli da mem condivisa  ho messo 5 secondo
 	/*while (1) {  //rimane in esecuzione
 		nsleep(step_nsec); //dorme per strap nanosecondi 
 		init_atoms();//ed avvia n_new_atoms , poi torna a dormire così all'infinito
 	}*/
+	printf("alimentazione dice:sono vivooo.\n");
 	int i=0;
 	while (i<=3) {  //rimane in esecuzione
 		nsleep(step_nsec); //dorme per strap nanosecondi 
 		init_atoms();//ed avvia n_new_atoms , poi torna a dormire così all'infinito
+		printf("alimetazione ha creato atomo con  i= %d.\n", i);
 		i=i+1;
 	}
 	printf("terminazione del processo alimentation.\n");

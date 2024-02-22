@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
 	//init_activator();
 	init_alimentation();
 	
-	int n_sec = 35;
+	int n_sec = 20;
 	exit_n_sec(n_sec); // gli do 35 sec di vita
 
 	/*sem_execute_semop(sem_port_init_get_id(state.general), 0, 0, 0);
