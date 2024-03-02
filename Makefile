@@ -11,7 +11,7 @@ LIB_DIR=lib
 BIN_DIR=bin
 
 # Binaries and sources
-BINARIES = $(TARGET) atom alimentation
+BINARIES = $(TARGET) atom activator alimentation 
 BINARIES_C=$(addprefix $(SRC_DIR)/, $(addsuffix .c, $(BINARIES)))
 
 # Other modules

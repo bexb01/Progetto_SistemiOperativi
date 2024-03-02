@@ -1,0 +1,3 @@
+master: La simulazione dovr`a partire solamente quando tutti i processi sopra citati sono stati
+creati e hanno eseguito le rispettive istruzioni di inizializzazione,
+quindi sincronizzare in qualche modo, magari con un semaforo

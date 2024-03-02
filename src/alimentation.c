@@ -1,4 +1,4 @@
-//alimentazione : ogni step econdi immette combustibile ovvero crea n nuovi atomi
+//alimentazione : ogni step nanosecondi immette combustibile ovvero crea n nuovi atomi
 //tutti include e define
 #define _GNU_SOURCE
 
@@ -8,7 +8,6 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -25,7 +24,7 @@ void nsleep(long step_nsec);
 
 int main(int argc, char *argv[]){
 	long step_nsec;
-	step_nsec = 50000000000;//dovremmo leggerli da mem condivisa  ho messo 5 secondo
+	step_nsec = 5;//dovremmo leggerli da mem condivisa  ho messo 5 secondo
 	/*while (1) {  //rimane in esecuzione
 		nsleep(step_nsec); //dorme per strap nanosecondi 
 		init_atoms();//ed avvia n_new_atoms , poi torna a dormire così all'infinito
@@ -59,19 +58,15 @@ void init_atoms(void){
 
 pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasforma in un altro processo, specificato da name, attraverso execve
 	pid_t process_pid;
-	int atomic_n =35; //[DA CORREGGERE] 35 num atomico atomi creati da aimentatore 
-	char *args[3], buf[10];   
+	//int atomic_n =35; //[DA CORREGGERE] 35 num atomico atomi creati da aimentatore 
+	char *args[2], buf[10];   
 	if ((process_pid = fork()) == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
 		dprintf(2, "alimentation.c: Error in fork.\n");//stampa u filedescriptor 2 che stampa su sdterr
 		//close_all();
 	} else if (process_pid == 0) { // se figlio 
-	      	//implementare funzione per il num atomico (casuale o distribuzione di prob a piacere), magari si puo mettere in una libreria? visto che deve usarlo si master che alimentatore
-		//sprintf(buf, "%d", index);//scrive in buf l'id noi lo possiamo usare per inviare il numero atomico agli atomi appena creati
-		
-		/*sprintf(buf, "%d", atomic_n);	//[DA CORREGGERE]
-		args[0] = name;  //nome del processo da inizializzare (atom, activator, alimentatore)
-		args[1] = buf;   //DOBBIAMO METTERE IL NUMERO ATOMICO
-		args[2] = NULL;  //fine args*/
+	    snprintf(buf, sizeof(buf), "%d", index);
+        args[0] = name;
+        args[1] = NULL; 
 		if (execve(name, args, NULL) == -1) { //runno processo name attraverso execve, in teoria adesso no è piu figlio master ma è un processo "a parte"
 			perror("execve");//stampa l'ultimo messaggio di errore
 			exit(EXIT_FAILURE);   //errori execve
