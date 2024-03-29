@@ -14,16 +14,26 @@
 #include <time.h>
 #include <errno.h>
 
-/*struct data{//è una struttura dati contipi che sono a loro volta strutture dati in mem condivisa o qualcosa del genere
-	shm_data_t *data
-}*/
+#include "include/shm_info.h"
+
+struct stats { //struct stats è formata da puntatori a memoria condivisa
+	//shm_n_atoms *atoms;
+	//shm_energy *energy; //e  molte altre da implementare
+	shm_info_t *info; //*inf = (shm_info_t *)shm_attach(shm_id); questo si trova nella funzione shm_info_attach, grazie a questo
+	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
+					  //shm_info_t 
+};
+
 void init_atoms(void);
 pid_t run_process(char *name, int index);
 void nsleep(long step_nsec);
 //struct data data; 
 
+struct stats stats;
+
 int main(int argc, char *argv[]){
 	long step_nsec;
+	shm_info_attach(&stats.info);
 	step_nsec = 5;//dovremmo leggerli da mem condivisa  ho messo 5 secondo
 	/*while (1) {  //rimane in esecuzione
 		nsleep(step_nsec); //dorme per strap nanosecondi 
@@ -31,7 +41,8 @@ int main(int argc, char *argv[]){
 	}*/
 	printf("alimentazione dice:sono vivooo.\n");
 	int i=0;
-	while (i<=3) {  //rimane in esecuzione
+	int n_new_atoms=shm_info_get_n_new_atoms(stats.info);
+	while (i<=n_new_atoms) {  //rimane in esecuzione
 		nsleep(step_nsec); //dorme per strap nanosecondi 
 		init_atoms();//ed avvia n_new_atoms , poi torna a dormire così all'infinito
 		printf("alimetazione ha creato atomo con  i= %d.\n", i);

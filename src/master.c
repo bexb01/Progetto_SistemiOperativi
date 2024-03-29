@@ -51,11 +51,12 @@ int main(int argc, char *argv[]){
 	                            // questo è possibile perche un punt a punt appunto contiene un indirizzo di un puntatore, quindi passare 
 								//un punt a punt oppure l'indirizzo di un punt è disciamo la stessa cosa per il chiamanate, tanto poi 
 								//la funzione chiamata salverà l'indirizzo che gli abbiamo passato nella sua istanza di puntatore a puntatore
+	param_init("../config_param.txt", stats.info);
 	msg_q_a_a_init(stats.info);	//gli passiamo il valore del puntatore *info che è l'indirizzo della structct shm_info_t che è dove salviamo l'id con la funzione				
 	init_atoms();
 	init_alimentation();
 	init_activator();
-	int n_sec = 60;
+	int n_sec = shm_info_get_sim_duration(stats.info);
 	//close_and_exit();
 	exit_n_sec(n_sec); // gli do 35 sec di vita
 
@@ -71,12 +72,14 @@ int main(int argc, char *argv[]){
 //crea  atomi
 void init_atoms(void){
 	int i, n_atoms;
-	pid_t pid;
-	//n_atoms= get_atoms(state.general); //legge da struct state campo general in cui ci ha salvato i dati 
-	n_atoms = 2; //a scopo di debugging iniziamo con 2 atomi 
+	pid_t pid; 
+	n_atoms = shm_info_get_n_atoms_init(stats.info); //a scopo di debugging iniziamo con 2 atomi 
+	//n_atoms=2;
+	printf("voglio avviare  %d atomi ma ne sto avviando %d.\n", shm_info_get_n_atoms_init(stats.info), n_atoms);
 	for(i = 0; i <  n_atoms; i++){
 		pid= run_process("./atom", i);
 		//shm_port_set_pid(state.ports, i, pid);//penso scriva in memoria condivisa i dati dei porti nel suo caso, degli atomi nel nostro, non so se ci serve
+		printf("ho crato atomo con pid %d", pid);
 	}
 }
 
@@ -103,21 +106,26 @@ void print_statistics(void){
 pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasforma in un altro processo, specificato da name, attraverso execve
 	pid_t process_pid;
 	//int atomic_n = 55; //[DA CORREGGERE] implementare funzione randomica o di distribuzione di probabilità o quello che si vuole, passare il n atomico da args penso fosse sbagliato o cmq implemenatato male
-	char *args[2], buf[10];   
-	if ((process_pid = fork()) == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
-		dprintf(2, "master.c: Error in fork.\n");//stampa u filedescriptor 2 che stampa su sdterr
-		
+	char *args[2], buf[10];  
+	process_pid = fork();
+	if (process_pid == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
+		perror("master.c: Error in fork.\n");//stampa u filedescriptor 2 che stampa su sdterr
+		return -1;
 	} else if (process_pid == 0) { // se figlio
+		printf("se sono qui sono nel figlio e process pid ha restituito %d e ho pid %d", process_pid, getpid());
 		snprintf(buf, sizeof(buf), "%d", index);
         args[0] = name;
         args[1] = NULL; 
-		if (execve(name, args, NULL) == -1) { //runno processo name attraverso execve, in teoria adesso no è piu figlio master ma è un processo "a parte"
+		int res_execve;
+		if ((res_execve=execve(name, args, NULL)) == -1) { //runno processo name attraverso execve, in teoria adesso no è piu figlio master ma è un processo "a parte"
 			perror("execve");//stampa l'ultimo messaggio di errore
 			exit(EXIT_FAILURE);   //errori execve
 		}
+	}else{
+		printf("Sono il processo padre con PID %d\n", getpid());
 	}
-
 	return process_pid;
+	
 }
 
 

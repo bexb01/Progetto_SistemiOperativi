@@ -1,14 +1,71 @@
 #include "../lib/shm.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "include/constants.h"
 #include "include/shm_info.h"
 #include "include/msg_comunication.h"
 
 struct shm_inf{
-
+	int energy_demand, n_atoms_init, n_atom_max, min_n_atoms, n_new_atoms, sim_duration, energy_explode_trashold;
+	long step;
 	int shm_info_id;
 	int msg_q_atom_activator_id;
 };
+
+void param_init(char * file_path, shm_info_t *inf){
+	FILE * param_file;
+	char buffer[100];
+	if ((param_file = fopen(file_path, "r")) == NULL) {
+		fprintf(stderr, " Errore in apertura param_file.\n");
+	}
+	while(fgets(buffer, sizeof(buffer), param_file) != NULL){
+
+		const char delim[] = " : ";
+		char *token = strtok(buffer, delim);
+		
+		if (strcmp(token, "ENERGY_DEMAND") == 0) {
+			token = strtok(NULL, delim);
+    		shm_info_set_energy_demand(inf, (int)strtol(token, NULL, 10));
+			printf("appena salvato enrgy demand %d.\n", shm_info_get_energy_demand(inf));
+		}
+		else if (strcmp(token, "N_ATOMS_INIT") == 0) {
+			token = strtok(NULL, delim);
+			shm_info_set_n_atoms_init(inf, (int)strtol(token, NULL, 10));
+			printf("appena salvato n atoms init %d.\n", shm_info_get_n_atoms_init(inf));
+		}
+		else if (strcmp(token, "N_ATOM_MAX") == 0) {
+			token = strtok(NULL, delim);
+			shm_info_set_n_atom_max(inf, (int)strtol(token, NULL, 10));
+			printf("appena salvato n atom max %d .\n", shm_info_get_n_atom_max(inf));
+		}
+		else if (strcmp(token, "STEP") == 0) {
+			token = strtok(NULL, delim);
+			shm_info_set_step(inf, strtol(token, NULL, 10));
+			printf("appena salvato  step %ld.\n", shm_info_get_step(inf));
+		}
+		else if (strcmp(token, "MIN_N_ATOMICO") == 0) {
+			token = strtok(NULL, delim);
+			shm_info_set_min_n_atoms(inf, (int)strtol(token, NULL, 10));
+			printf("appena salvato min n atomico %d.\n", shm_info_get_min_n_atoms(inf));
+		}
+		else if (strcmp(token, "N_NEW_ATOMS") == 0) {
+			token = strtok(NULL, delim);
+			shm_info_set_n_new_atoms(inf, (int)strtol(token, NULL, 10));
+			printf("appena salvato n new atoms %d.\n", shm_info_get_n_new_atoms(inf));
+		}
+		else if (strcmp(token, "SIM_DURATION") == 0) {
+			token = strtok(NULL, delim);
+			shm_info_set_sim_duration(inf, (int)strtol(token, NULL, 10));
+			printf("appena salvato sim duration %d.\n", shm_info_get_sim_duration(inf));
+		}
+		else if (strcmp(token, "ENERGY_EXPLODE_THRESHOLD") == 0) {
+			token = strtok(NULL, delim);
+			shm_info_set_energy_explode_trashold(inf, (int)strtol(token, NULL, 10));
+			printf("appena salvato energy explode threshold %d.\n", shm_info_get_energy_explode_trashold(inf));
+		}
+	}
+}
 
 //inf è l'istanza di tipo shm_info_t puntata, *inf è il puntatore che la punta e **inf e il puntatore di puntatore che punta a *inf
 void shm_info_attach(shm_info_t **inf){//questo metodo fai sia create che attach alla mem condivisa con la kay shm_info_key e un segmento di grandezzashm_info_t
@@ -43,8 +100,25 @@ void shm_info_delete(shm_info_t *inf){
 static void shm_info_set_id(shm_info_t *inf){inf->shm_info_id = shm_create(SHM_INFO_KEY, 0);}//shm_create usa shmget che ci restituirà l'id della mem condivisa se è 
                                             //gia stata creata, noi sfruttiamo questo meccanismo per farci restituire l'id e salvarlo in memoria condivisa così che 
 											//altri processi che devono usarla ci si possono attaccare con funzione attach e l'id
+static void shm_info_set_energy_demand(shm_info_t *inf,int energ_demand){inf->energy_demand=energ_demand;}
+static void shm_info_set_n_atoms_init(shm_info_t *inf, int num_atoms_init){inf->n_atoms_init=num_atoms_init;}
+static void shm_info_set_n_atom_max(shm_info_t *inf, int num_atom_max){inf->n_atom_max=num_atom_max;}
+static void shm_info_set_min_n_atoms(shm_info_t *inf, int min_num_atoms){inf->min_n_atoms=min_num_atoms;}
+static void shm_info_set_n_new_atoms(shm_info_t *inf, int num_new_atoms){inf->n_new_atoms=num_new_atoms;}
+static void shm_info_set_sim_duration(shm_info_t *inf, int simulation_duration){inf->sim_duration=simulation_duration;}
+static void shm_info_set_energy_explode_trashold(shm_info_t *inf, int nrg_explode_trashold){inf->energy_explode_trashold=nrg_explode_trashold;}
+static void shm_info_set_step(shm_info_t *inf, long step_n_sec){inf->step=step_n_sec;}
 
 //getters
 //void shm_info_get_id(shm_info_t +inf)
 int msg_q_a_a_id_get(shm_info_t *inf){return inf->msg_q_atom_activator_id;}
 int shm_id_get(shm_info_t *inf){return inf->shm_info_id;}
+
+int shm_info_get_energy_demand(shm_info_t *inf){return inf->energy_demand;}
+int shm_info_get_n_atoms_init(shm_info_t *inf){return inf->n_atoms_init;}
+int shm_info_get_n_atom_max(shm_info_t *inf){return inf->n_atom_max;}
+int shm_info_get_min_n_atoms(shm_info_t *inf){return inf->min_n_atoms;}
+int shm_info_get_n_new_atoms(shm_info_t *inf){return inf->n_new_atoms;}
+int shm_info_get_sim_duration(shm_info_t *inf){return inf->sim_duration;}
+int shm_info_get_energy_explode_trashold(shm_info_t *inf){return inf->energy_explode_trashold;}
+long shm_info_get_step(shm_info_t *inf){return inf->step;}

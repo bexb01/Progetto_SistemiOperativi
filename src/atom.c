@@ -51,12 +51,13 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
 	int atomic_number;
-	int min_atomic_n = 24;
+	//int min_atomic_n = 24;
 	int received;
     printf("atomo creato.\n");
 	shm_info_attach(&stats.info);
 	printf("atomo %d ha effettuato attach alla mem condivisa", getpid());
 	//atomic_number = (int)strtol(argv[1], NULL, 10);
+	int min_atomic_n = shm_info_get_min_n_atoms(stats.info);
     atomic_number=55;
 	int i=0;
     printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
