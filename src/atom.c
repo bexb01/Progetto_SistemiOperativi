@@ -46,6 +46,7 @@ struct  atom_n_parent_child atomic_n_to_split(int atomic_n);
 int exit_n_sec(int n_seconds);
 void close_and_exit();
 int loop_rcv_msg(int atomic_n);
+int random_atomic_n(int max, int min);
 
 struct stats stats;
 
@@ -56,9 +57,9 @@ int main(int argc, char *argv[]){
     printf("atomo creato.\n");
 	shm_info_attach(&stats.info);
 	printf("atomo %d ha effettuato attach alla mem condivisa", getpid());
-	//atomic_number = (int)strtol(argv[1], NULL, 10);
 	int min_atomic_n = shm_info_get_min_n_atoms(stats.info);
-    atomic_number=55;
+	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
+    atomic_number=random_atomic_n(max_atomic_n,max_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
 	int i=0;
     printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
 	/*if*/ while (atomic_number >= min_atomic_n){
@@ -170,6 +171,14 @@ int exit_n_sec(int n_seconds){
 
     // Questa parte del codice non verrà mai eseguita
     printf("Questa riga non verrà mai stampata.\n");
+}
+
+int random_atomic_n(int max, int min){
+	// Inizializza il generatore di numeri casuali con il tempo corrente come seme cosi che ogni volta sia inizializzato con un valore diverso
+    srand(time(NULL));
+    
+    // Genera un numero casuale compreso tra n e m
+    return rand() % (max - min+ 1) + min;
 }
 
 int loop_rcv_msg(int atomic_n){

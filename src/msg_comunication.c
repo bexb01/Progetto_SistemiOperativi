@@ -54,11 +54,11 @@ int msg_comunication_rcv(int msg_q_id, int type, int *sender_id, int *boolean_sp
 	printf("sto per cercare di ricevere su coda id %d e messaggio tipo %d\n",msg_q_id,type);
 	//do {
 		//printf("msg_comunication_rcv dopo questa sta in rcv %d %d\n", msg_q_id, type);
-		ret = msgrcv(msg_q_id, &msg_rcv, MSG_SIZE, MSG_TYPE(type), 0);
+		ret = msgrcv(msg_q_id, &msg_rcv, MSG_SIZE, 0, 0);//il quarto  parametro è il tipo di messaggio, mettendolo a 0 non verrà piu effettuato il controllo sul tipo ricevuto=ora non c'è bisogno di specificare il tipo di messaggio quindi il primo atomo a caso che riceve il messaggio lo cancella dalla coda messaggi
 		//printf("msg_comunication_rcv aspetta messaggio su coda %d di tipo %d\n", msg_q_id, type);
 		/*if (!restarting && ret < 0)
 			return FALSE;*/
-		i=i+1;
+		//i=i+1;
 	//} while(ret < 0 /*&& i<=1000*/);
 	if(ret>0){
 	printf("MESSAGGIO RICEVUTO00000000000000\n");

@@ -105,8 +105,7 @@ void print_statistics(void){
 //runna il processo specificato da name
 pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasforma in un altro processo, specificato da name, attraverso execve
 	pid_t process_pid;
-	//int atomic_n = 55; //[DA CORREGGERE] implementare funzione randomica o di distribuzione di probabilità o quello che si vuole, passare il n atomico da args penso fosse sbagliato o cmq implemenatato male
-	char *args[2], buf[10];  
+	char *args[2], buf[10];
 	process_pid = fork();
 	if (process_pid == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
 		perror("master.c: Error in fork.\n");//stampa u filedescriptor 2 che stampa su sdterr

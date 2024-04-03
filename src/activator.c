@@ -40,41 +40,41 @@ int main(int argc, char *argv[]){
 	sleep_n_sec(10);
 	//while(1){
 		
-		atomic_n_to_split=55;
+		atomic_n_to_split=1;//adesso non c'è piu bisogno di specificare il numero atomico= tipo di messaggio
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		//printf("inviato messaggio split 55.\n");
 		sleep_n_sec(n_seconds);
-		atomic_n_to_split=27;
+		//atomic_n_to_split=27;
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		//printf("inviato messaggio split 27.\n");
 		sleep_n_sec(n_seconds);
-		atomic_n_to_split=55;
+		//atomic_n_to_split=55;
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		sleep_n_sec(n_seconds);
-		atomic_n_to_split=28;
+		//atomic_n_to_split=28;
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		//printf("inviato messaggio split 28.\n");	
 		sleep_n_sec(n_seconds);
-		atomic_n_to_split=27;
+		//atomic_n_to_split=27;
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		sleep_n_sec(n_seconds);
-		atomic_n_to_split=28;
+		//atomic_n_to_split=28;
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		sleep_n_sec(n_seconds);
-		atomic_n_to_split=55;
+		//atomic_n_to_split=55;
 		send_split_msg(atomic_n_to_split);
-		atomic_n_to_split=28;
+		//atomic_n_to_split=28;
 		send_split_msg(atomic_n_to_split);
-		atomic_n_to_split=27;
+		//atomic_n_to_split=27;
 		send_split_msg(atomic_n_to_split);
 		i=i+1;
 	//}
