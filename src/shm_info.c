@@ -8,6 +8,8 @@
 
 struct shm_inf{
 	int energy_demand, n_atoms_init, n_atom_max, min_n_atoms, n_new_atoms, sim_duration, energy_explode_trashold;
+	int n_activation_tot, n_activation_last_sec, n_split_tot, n_split_last_sec, energy_prod_tot, energy_prod_laste_sec,
+		energy_cons_tot, energy_cons_last_sec, waste_tot, waste_last_sec;
 	long step;
 	int shm_info_id;
 	int msg_q_atom_activator_id;

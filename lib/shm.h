@@ -8,7 +8,6 @@
 
 #include <sys/shm.h>
 #include <sys/stat.h>
-
 /**
 * @brief Creates a new shared memory segment.
 *
