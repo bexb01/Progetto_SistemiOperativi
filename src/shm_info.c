@@ -1,4 +1,5 @@
 #include "../lib/shm.h"
+#include "../lib/semaphore.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -13,6 +14,7 @@ struct shm_inf{
 	long step;
 	int shm_info_id;
 	int msg_q_atom_activator_id;
+	int sem_start_id;
 };
 
 void param_init(char * file_path, shm_info_t *inf){
@@ -98,6 +100,23 @@ void shm_info_delete(shm_info_t *inf){
 	shm_delete(shm_id);
 }
 
+void shm_sem_init(shm_info_t *inf){
+	/* Semaphores */
+	inf->sem_start_id = sem_create(SEM_ID_READY, 2);
+	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore
+	sem_setval(inf->sem_start_id, 1, 0);	//simulation semaphore
+}
+
+int shm_sem_ready(shm_info_t *inf){
+	int i;
+	/* Semaphores */
+	int num_process = shm_info_get_n_atoms_init(inf)+2;
+	while (sem_getval(inf->sem_start_id, 0) < num_process) {
+		
+    }
+	return 0;
+}
+
 // Setters
 static void shm_info_set_id(shm_info_t *inf){inf->shm_info_id = shm_create(SHM_INFO_KEY, 0);}//shm_create usa shmget che ci restituirà l'id della mem condivisa se è 
                                             //gia stata creata, noi sfruttiamo questo meccanismo per farci restituire l'id e salvarlo in memoria condivisa così che 
@@ -124,3 +143,4 @@ int shm_info_get_n_new_atoms(shm_info_t *inf){return inf->n_new_atoms;}
 int shm_info_get_sim_duration(shm_info_t *inf){return inf->sim_duration;}
 int shm_info_get_energy_explode_trashold(shm_info_t *inf){return inf->energy_explode_trashold;}
 long shm_info_get_step(shm_info_t *inf){return inf->step;}
+int shm_sem_get_startid(shm_info_t *inf){return inf->sem_start_id;}

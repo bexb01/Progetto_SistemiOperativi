@@ -15,6 +15,7 @@
 #include <errno.h>
 
 #include "include/shm_info.h"
+#include "../lib/semaphore.h"
 
 struct stats { //struct stats è formata da puntatori a memoria condivisa
 	//shm_n_atoms *atoms;
@@ -34,6 +35,11 @@ struct stats stats;
 int main(int argc, char *argv[]){
 	long step_nsec;
 	shm_info_attach(&stats.info);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	printf("semaphore processi alimentation: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
+
+	}
 	step_nsec = 5;//dovremmo leggerli da mem condivisa  ho messo 5 secondo
 	/*while (1) {  //rimane in esecuzione
 		nsleep(step_nsec); //dorme per strap nanosecondi 

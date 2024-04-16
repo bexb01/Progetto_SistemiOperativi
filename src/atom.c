@@ -14,8 +14,9 @@
 #include <errno.h>
 
 
-#include "include/shm_info.h"
+#include "../lib/semaphore.h"
 #include "include/msg_comunication.h"
+#include "include/shm_info.h"
 /*struct statistics {
 	//shared mem tutto quello che decideremo di metterci
 }*/
@@ -56,7 +57,12 @@ int main(int argc, char *argv[]){
 	int received;
     printf("atomo creato.\n");
 	shm_info_attach(&stats.info);
-	printf("atomo %d ha effettuato attach alla mem condivisa", getpid());
+	printf("atomo %d ha effettuato attach alla mem condivisa \n", getpid());
+	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	printf("semaphore processi atom: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
+
+	}
 	int min_atomic_n = shm_info_get_min_n_atoms(stats.info);
 	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
     atomic_number=random_atomic_n(max_atomic_n,max_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz

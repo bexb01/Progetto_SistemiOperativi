@@ -8,6 +8,7 @@
 //la key è univoca, id cambia per ogni esecuzione
 
 #define SHM_INFO_KEY 0x1fffffff
+#define SEM_ID_READY 0x00ffffff
 /*#define SHM_DATA_PORTS_KEY 0x2fffffff
 #define SHM_DATA_SHIPS_KEY 0x3fffffff
 #define SHM_DATA_CARGO_KEY 0x4fffffff

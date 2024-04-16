@@ -14,6 +14,10 @@ void shm_info_detach(shm_info_t *inf);
 
 void shm_info_delete(shm_info_t *inf);
 
+void shm_sem_init(shm_info_t *inf);
+
+int shm_sem_ready(shm_info_t *inf);
+
 static void shm_info_set_id(shm_info_t *inf);
 static void shm_info_set_energy_demand(shm_info_t *inf,int energ_demand);
 static void shm_info_set_n_atoms_init(shm_info_t *inf, int num_atoms_init);
@@ -35,5 +39,6 @@ int shm_info_get_n_new_atoms(shm_info_t *inf);
 int shm_info_get_sim_duration(shm_info_t *inf);
 int shm_info_get_energy_explode_trashold(shm_info_t *inf);
 long shm_info_get_step(shm_info_t *inf);
+int shm_sem_get_startid(shm_info_t *inf);
 
 #endif

@@ -13,8 +13,9 @@
 #include <time.h>
 #include <errno.h>
 
-
+#include "../lib/semaphore.h"
 #include "include/msg_comunication.h"
+#include "include/shm_info.h"
 struct stats { //struct stats è formata da puntatori a memoria condivisa
 	//shm_n_atoms *atoms;
 	//shm_energy *energy; //e  molte altre da implementare
@@ -53,9 +54,21 @@ int main(int argc, char *argv[]){
 								//la funzione chiamata salverà l'indirizzo che gli abbiamo passato nella sua istanza di puntatore a puntatore
 	param_init("../config_param.txt", stats.info);
 	msg_q_a_a_init(stats.info);	//gli passiamo il valore del puntatore *info che è l'indirizzo della structct shm_info_t che è dove salviamo l'id con la funzione				
+	shm_sem_init(stats.info);
 	init_atoms();
 	init_alimentation();
 	init_activator();
+	printf("Attesa che tutti i processi figli vengano creati...\n");
+	int ret = shm_sem_ready(stats.info);
+	if(ret == 0){
+			printf("semaphore processi totali: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+			printf("figli creati con successo\n");
+	} else{
+			printf("Fallito\n");
+	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0);
+	printf("semaphore start : %d\n", sem_getval(shm_sem_get_startid(stats.info), 1));
+	
 	int n_sec = shm_info_get_sim_duration(stats.info);
 	//close_and_exit();
 	exit_n_sec(n_sec); // gli do 35 sec di vita

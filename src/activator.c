@@ -15,6 +15,7 @@
 
 #include "include/shm_info.h"
 #include "include/msg_comunication.h"
+#include "../lib/semaphore.h"
 struct stats { //struct stats è formata da puntatori a memoria condivisa
 	//shm_n_atoms *atoms;
 	//shm_energy *energy; //e  molte altre da implementare
@@ -35,7 +36,12 @@ int main(int argc, char *argv[]){
     int atomic_n_to_split;
 	int n_seconds=2;
 	shm_info_attach(&stats.info);//dobbiamo crearla in master, questo serve solo per fare attach, nel master fa create+ attach
-	printf("shm attaccata activator.");
+	printf("shm attaccata activator.\n");
+	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	printf("semaphore processi activator: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
+
+	}
 	int i =0;
 	sleep_n_sec(10);
 	//while(1){
