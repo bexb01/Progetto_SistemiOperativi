@@ -10,7 +10,7 @@
 struct shm_inf{
 	int energy_demand, n_atoms_init, n_atom_max, min_n_atoms, n_new_atoms, sim_duration, energy_explode_trashold;
 	int n_activation_tot, n_activation_last_sec, n_split_tot, n_split_last_sec, energy_prod_tot, energy_prod_laste_sec,
-		energy_cons_tot, energy_cons_last_sec, waste_tot, waste_last_sec;
+		energy_cons_tot, energy_cons_last_sec, waste_tot, waste_last_sec, n_atoms_now;
 	long step;
 	int shm_info_id;
 	int msg_q_atom_activator_id;
@@ -102,9 +102,10 @@ void shm_info_delete(shm_info_t *inf){
 
 void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
-	inf->sem_start_id = sem_create(SEM_ID_READY, 2);
+	inf->sem_start_id = sem_create(SEM_ID_READY, 3);
 	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore
 	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore
+	sem_setval(inf->sem_start_id, 2, 1);    // n_atoms_now semaphore
 }
 
 int shm_sem_ready(shm_info_t *inf){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
@@ -128,6 +129,7 @@ static void shm_info_set_n_new_atoms(shm_info_t *inf, int num_new_atoms){inf->n_
 static void shm_info_set_sim_duration(shm_info_t *inf, int simulation_duration){inf->sim_duration=simulation_duration;}
 static void shm_info_set_energy_explode_trashold(shm_info_t *inf, int nrg_explode_trashold){inf->energy_explode_trashold=nrg_explode_trashold;}
 static void shm_info_set_step(shm_info_t *inf, long step_n_sec){inf->step=step_n_sec;}
+void shm_info_set_n_atoms_now(shm_info_t *inf, int new){inf->n_atoms_now=inf->n_atoms_now+new;}
 
 //getters
 //void shm_info_get_id(shm_info_t +inf)
@@ -143,3 +145,4 @@ int shm_info_get_sim_duration(shm_info_t *inf){return inf->sim_duration;}
 int shm_info_get_energy_explode_trashold(shm_info_t *inf){return inf->energy_explode_trashold;}
 long shm_info_get_step(shm_info_t *inf){return inf->step;}
 int shm_sem_get_startid(shm_info_t *inf){return inf->sem_start_id;}
+int shm_sem_get_n_atoms_now(shm_info_t *inf){return inf->n_atoms_now;}

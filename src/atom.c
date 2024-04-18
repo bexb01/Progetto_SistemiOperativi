@@ -67,23 +67,35 @@ int main(int argc, char *argv[]){
 	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
     atomic_number=random_atomic_n(max_atomic_n,max_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
 	int i=0;
+	if(sem_getval(shm_sem_get_startid(stats.info), 2) == 1){
+		sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
+		shm_info_set_n_atoms_now(stats.info, 1);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
+		printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", shm_sem_get_n_atoms_now(stats.info));
+	}
+	
     printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
-	/*if*/ while (atomic_number >= min_atomic_n){
+	while (1){
 		printf("ancora vivo.\n");
 		if((received=loop_rcv_msg(atomic_number))){//ricezzione di un messaggio gli dice di fare scissione
 			received=0;
 			printf("atomo si sta per scindere.\n");
-			atomic_number=split(atomic_number); //gli passiamo n atomico padre
-    		printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
+			if(atomic_number >= min_atomic_n){
+				atomic_number=split(atomic_number); //gli passiamo n atomico padre
+    			printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
+			}else{
+				//se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
+				printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
+				if(sem_getval(shm_sem_get_startid(stats.info), 2) == 1){
+					sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
+					shm_info_set_n_atoms_now(stats.info, -1);
+					sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
+				}
+				printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", shm_sem_get_n_atoms_now(stats.info));
+				close_and_exit();
+			}
 		}
-    	i=i+1;
-    } //else { //se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
-		printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
-    	//exit(0);
-		close_and_exit();
-	//}//se c'è hwile in teoria non arriviamo mai qui, se c'è if arriviamo sempre qui
-	int n_sec = 15;
-	exit_n_sec(n_sec);
+	}
 }
 
 int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre e figlio come atomic_n/2, magari dovrebbe salvare anche i pid nella mem condivisa? lo faremo se serve
@@ -104,6 +116,13 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 			 exit(EXIT_FAILURE);
     	}
 		read(p_c_pipe[0], &atomic_n, sizeof(int));
+
+		if(sem_getval(shm_sem_get_startid(stats.info), 2) == 1){
+			sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
+			shm_info_set_n_atoms_now(stats.info, 1);
+			sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
+			printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", shm_sem_get_n_atoms_now(stats.info));
+		}
 
         //printf("figlio ha ricevuto natomico dal padre atomic_n = %d.\n", atomic_n);
 

@@ -34,7 +34,7 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
     int atomic_n_to_split;
-	int n_seconds=2;
+	int n_seconds=1;
 	shm_info_attach(&stats.info);//dobbiamo crearla in master, questo serve solo per fare attach, nel master fa create+ attach
 	printf("shm attaccata activator.\n");
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
@@ -44,46 +44,15 @@ int main(int argc, char *argv[]){
 	}
 	int i =0;
 	sleep_n_sec(10);
-	//while(1){
-		
+	while(i<=20){
 		atomic_n_to_split=1;//adesso non c'è piu bisogno di specificare il numero atomico= tipo di messaggio
 		send_split_msg(atomic_n_to_split);
 		send_split_msg(atomic_n_to_split);
 		//printf("inviato messaggio split 55.\n");
 		sleep_n_sec(n_seconds);
-		//atomic_n_to_split=27;
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
-		//printf("inviato messaggio split 27.\n");
-		sleep_n_sec(n_seconds);
-		//atomic_n_to_split=55;
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
-		sleep_n_sec(n_seconds);
-		//atomic_n_to_split=28;
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
-		//printf("inviato messaggio split 28.\n");	
-		sleep_n_sec(n_seconds);
-		//atomic_n_to_split=27;
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
-		sleep_n_sec(n_seconds);
-		//atomic_n_to_split=28;
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
-		sleep_n_sec(n_seconds);
-		//atomic_n_to_split=55;
-		send_split_msg(atomic_n_to_split);
-		//atomic_n_to_split=28;
-		send_split_msg(atomic_n_to_split);
-		//atomic_n_to_split=27;
-		send_split_msg(atomic_n_to_split);
+		
 		i=i+1;
-	//}
+	}
 	void close_and_exit();
 }
 
