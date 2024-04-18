@@ -100,15 +100,14 @@ void shm_info_delete(shm_info_t *inf){
 	shm_delete(shm_id);
 }
 
-void shm_sem_init(shm_info_t *inf){
+void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
 	inf->sem_start_id = sem_create(SEM_ID_READY, 2);
 	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore
-	sem_setval(inf->sem_start_id, 1, 0);	//simulation semaphore
+	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore
 }
 
-int shm_sem_ready(shm_info_t *inf){
-	int i;
+int shm_sem_ready(shm_info_t *inf){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
 	/* Semaphores */
 	int num_process = shm_info_get_n_atoms_init(inf)+2;
 	while (sem_getval(inf->sem_start_id, 0) < num_process) {

@@ -59,15 +59,15 @@ int main(int argc, char *argv[]){
 	init_alimentation();
 	init_activator();
 	printf("Attesa che tutti i processi figli vengano creati...\n");
-	int ret = shm_sem_ready(stats.info);
-	if(ret == 0){
-			printf("semaphore processi totali: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
-			printf("figli creati con successo\n");
-	} else{
-			printf("Fallito\n");
+	while(shm_sem_ready(stats.info)!= 0){// fino a quando semaforo non è ready aspettiamo
+		printf("attendo creazione figli\n");
 	}
-	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0);
-	printf("semaphore start : %d\n", sem_getval(shm_sem_get_startid(stats.info), 1));
+		//se siamo qui il semaforo è in stato ready	
+	printf("semaphore processi totali: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+	printf("figli creati con successo\n");
+	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0); //allora semaforo simulazione a 1
+	printf("semaphore start : %d\n simulazione avviata\n", sem_getval(shm_sem_get_startid(stats.info), 1));
+
 	
 	int n_sec = shm_info_get_sim_duration(stats.info);
 	//close_and_exit();
