@@ -48,6 +48,7 @@ int exit_n_sec(int n_seconds);
 void close_and_exit();
 int loop_rcv_msg(int atomic_n);
 int random_atomic_n(int max, int min);
+void update_waste(int waste);
 
 struct stats stats;
 
@@ -67,12 +68,8 @@ int main(int argc, char *argv[]){
 	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
     atomic_number=random_atomic_n(max_atomic_n,max_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
 	int i=0;
-	if(sem_getval(shm_sem_get_startid(stats.info), 2) == 1){
-		sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
-		shm_info_set_n_atoms_now(stats.info, 1);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
-		printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", shm_sem_get_n_atoms_now(stats.info));
-	}
+		printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 	
     printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
 	while (1){
@@ -80,18 +77,15 @@ int main(int argc, char *argv[]){
 		if((received=loop_rcv_msg(atomic_number))){//ricezzione di un messaggio gli dice di fare scissione
 			received=0;
 			printf("atomo si sta per scindere.\n");
-			if(atomic_number >= min_atomic_n){
+			if(atomic_number > min_atomic_n){
 				atomic_number=split(atomic_number); //gli passiamo n atomico padre
     			printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
 			}else{
 				//se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
 				printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
-				if(sem_getval(shm_sem_get_startid(stats.info), 2) == 1){
 					sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
-					shm_info_set_n_atoms_now(stats.info, -1);
-					sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
-				}
-				printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", shm_sem_get_n_atoms_now(stats.info));
+				printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+				update_waste(atomic_number);
 				close_and_exit();
 			}
 		}
@@ -117,12 +111,8 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
     	}
 		read(p_c_pipe[0], &atomic_n, sizeof(int));
 
-		if(sem_getval(shm_sem_get_startid(stats.info), 2) == 1){
-			sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
-			shm_info_set_n_atoms_now(stats.info, 1);
 			sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
-			printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", shm_sem_get_n_atoms_now(stats.info));
-		}
+			printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 
         //printf("figlio ha ricevuto natomico dal padre atomic_n = %d.\n", atomic_n);
 
@@ -165,11 +155,31 @@ struct  atom_n_parent_child atomic_n_to_split(int atomic_n){//splitto sempre per
 	      	return parent_child;
 	}
 }
-	      	
+void update_waste(int waste){// aggiorna le scorie in mem condivisa
+	while(sem_getval(shm_sem_get_startid(stats.info), 5)==0){
+	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
+	waste = waste+ shm_info_get_waste_tot(stats.info);
+	shm_info_set_waste_tot(stats.info, waste);         //aggiorna mem condivisa in mutua escl
+	sem_execute_semop(shm_sem_get_startid(stats.info), 5, -1, 0);
+}   
+
 void update_energy(struct  atom_n_parent_child p_c){
 	int energy_val;
 	energy_val=energy(p_c);
-	//aggiornare memoria condivisa delle statistiche del master con l'energia (o magari bisogna inviare un messaggio al master con l'energia e lui l'aggiorna? bho)
+	while(sem_getval(shm_sem_get_startid(stats.info), 3)==0){
+	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
+	energy_val=energy_val+shm_info_get_energy_prod_tot(stats.info);
+	int explode;
+	if(energy_val > (explode=(shm_info_get_energy_explode_trashold(stats.info)))){
+		printf("EXPLODE - EXPLODE - EXPLODE l'energia totale al netto di quella consumata dal master: %d è maggiore del parametro massimo %d\n",energy_val , explode);
+		//bloccare l'esecuzione
+		close_and_exit();
+	}else{
+		shm_info_set_energy_prod_tot(stats.info, energy_val);         //aggiorna mem condivisa in mutua escl
+		sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
+	}
 }
 
 int energy(struct atom_n_parent_child p_c){

@@ -34,8 +34,9 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
     int atomic_n_to_split;
-	int n_seconds=1;
+	
 	shm_info_attach(&stats.info);//dobbiamo crearla in master, questo serve solo per fare attach, nel master fa create+ attach
+	int n_seconds=shm_info_get_step_attivatore(stats.info);
 	printf("shm attaccata activator.\n");
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	printf("semaphore processi activator: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));

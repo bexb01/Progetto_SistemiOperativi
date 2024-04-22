@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "../lib/shm.h"
 #include "../lib/semaphore.h"
 #include <stdio.h>
@@ -8,9 +10,9 @@
 #include "include/msg_comunication.h"
 
 struct shm_inf{
-	int energy_demand, n_atoms_init, n_atom_max, min_n_atoms, n_new_atoms, sim_duration, energy_explode_trashold;
+	int energy_demand, n_atoms_init, n_atom_max, min_n_atoms, n_new_atoms, sim_duration, energy_explode_trashold, step_attivatore;
 	int n_activation_tot, n_activation_last_sec, n_split_tot, n_split_last_sec, energy_prod_tot, energy_prod_laste_sec,
-		energy_cons_tot, energy_cons_last_sec, waste_tot, waste_last_sec, n_atoms_now;
+		energy_cons_tot, energy_cons_last_sec, waste_tot, waste_last_sec;
 	long step;
 	int shm_info_id;
 	int msg_q_atom_activator_id;
@@ -43,7 +45,7 @@ void param_init(char * file_path, shm_info_t *inf){
 			shm_info_set_n_atom_max(inf, (int)strtol(token, NULL, 10));
 			printf("appena salvato n atom max %d .\n", shm_info_get_n_atom_max(inf));
 		}
-		else if (strcmp(token, "STEP") == 0) {
+		else if (strcmp(token, "STEP_ALIMENTAZIONE") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_step(inf, strtol(token, NULL, 10));
 			printf("appena salvato  step %ld.\n", shm_info_get_step(inf));
@@ -66,6 +68,12 @@ void param_init(char * file_path, shm_info_t *inf){
 		else if (strcmp(token, "ENERGY_EXPLODE_THRESHOLD") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_energy_explode_trashold(inf, (int)strtol(token, NULL, 10));
+			printf("appena salvato energy explode threshold %d.\n", shm_info_get_energy_explode_trashold(inf));
+	
+		}	
+		else if (strcmp(token, "STEP_ATTIVATORE") == 0) {
+			token = strtok(NULL, delim);
+			shm_info_set_step_attivatore(inf, (int)strtol(token, NULL, 10));
 			printf("appena salvato energy explode threshold %d.\n", shm_info_get_energy_explode_trashold(inf));
 		}
 	}
@@ -102,10 +110,15 @@ void shm_info_delete(shm_info_t *inf){
 
 void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
-	inf->sem_start_id = sem_create(SEM_ID_READY, 3);
+	inf->sem_start_id = sem_create(SEM_ID_READY, 7);
 	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore
 	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore
-	sem_setval(inf->sem_start_id, 2, 1);    // n_atoms_now semaphore
+	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
+
+	sem_setval(inf->sem_start_id, 3, 1);    // energy_prod_tot sem 
+	sem_setval(inf->sem_start_id, 4, 1);    // energy_prod_laste_sec sem
+	sem_setval(inf->sem_start_id, 5, 0);    // waste_tot
+	sem_setval(inf->sem_start_id, 6, 0);    // waste_last_sec
 }
 
 int shm_sem_ready(shm_info_t *inf){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
@@ -121,15 +134,20 @@ int shm_sem_ready(shm_info_t *inf){// controlla che il semaforo process sia pron
 static void shm_info_set_id(shm_info_t *inf){inf->shm_info_id = shm_create(SHM_INFO_KEY, 0);}//shm_create usa shmget che ci restituirà l'id della mem condivisa se è 
                                             //gia stata creata, noi sfruttiamo questo meccanismo per farci restituire l'id e salvarlo in memoria condivisa così che 
 											//altri processi che devono usarla ci si possono attaccare con funzione attach e l'id
-static void shm_info_set_energy_demand(shm_info_t *inf,int energ_demand){inf->energy_demand=energ_demand;}
-static void shm_info_set_n_atoms_init(shm_info_t *inf, int num_atoms_init){inf->n_atoms_init=num_atoms_init;}
-static void shm_info_set_n_atom_max(shm_info_t *inf, int num_atom_max){inf->n_atom_max=num_atom_max;}
-static void shm_info_set_min_n_atoms(shm_info_t *inf, int min_num_atoms){inf->min_n_atoms=min_num_atoms;}
-static void shm_info_set_n_new_atoms(shm_info_t *inf, int num_new_atoms){inf->n_new_atoms=num_new_atoms;}
-static void shm_info_set_sim_duration(shm_info_t *inf, int simulation_duration){inf->sim_duration=simulation_duration;}
-static void shm_info_set_energy_explode_trashold(shm_info_t *inf, int nrg_explode_trashold){inf->energy_explode_trashold=nrg_explode_trashold;}
-static void shm_info_set_step(shm_info_t *inf, long step_n_sec){inf->step=step_n_sec;}
-void shm_info_set_n_atoms_now(shm_info_t *inf, int new){inf->n_atoms_now=inf->n_atoms_now+new;}
+void shm_info_set_energy_demand(shm_info_t *inf,int energ_demand){inf->energy_demand=energ_demand;}
+void shm_info_set_n_atoms_init(shm_info_t *inf, int num_atoms_init){inf->n_atoms_init=num_atoms_init;}
+void shm_info_set_n_atom_max(shm_info_t *inf, int num_atom_max){inf->n_atom_max=num_atom_max;}
+void shm_info_set_min_n_atoms(shm_info_t *inf, int min_num_atoms){inf->min_n_atoms=min_num_atoms;}
+void shm_info_set_n_new_atoms(shm_info_t *inf, int num_new_atoms){inf->n_new_atoms=num_new_atoms;}
+void shm_info_set_sim_duration(shm_info_t *inf, int simulation_duration){inf->sim_duration=simulation_duration;}
+void shm_info_set_energy_explode_trashold(shm_info_t *inf, int nrg_explode_trashold){inf->energy_explode_trashold=nrg_explode_trashold;}
+void shm_info_set_step(shm_info_t *inf, long step_n_sec){inf->step=step_n_sec;}
+void shm_info_set_step_attivatore(shm_info_t *inf, int step_sec){inf->step_attivatore=step_sec;}
+
+void shm_info_set_energy_prod_tot(shm_info_t *inf, int energy_prod){inf->energy_prod_tot=energy_prod;}
+void shm_info_set_energy_prod_laste_sec(shm_info_t *inf, int energy_prod_sec){inf->energy_prod_laste_sec=energy_prod_sec;}
+void shm_info_set_waste_tot(shm_info_t *inf, int waste){inf->waste_tot=waste;}
+void shm_info_set_waste_last_sec(shm_info_t *inf, int waste_sec){inf->waste_last_sec=waste_sec;}
 
 //getters
 //void shm_info_get_id(shm_info_t +inf)
@@ -144,5 +162,11 @@ int shm_info_get_n_new_atoms(shm_info_t *inf){return inf->n_new_atoms;}
 int shm_info_get_sim_duration(shm_info_t *inf){return inf->sim_duration;}
 int shm_info_get_energy_explode_trashold(shm_info_t *inf){return inf->energy_explode_trashold;}
 long shm_info_get_step(shm_info_t *inf){return inf->step;}
+long shm_info_get_step_attivatore(shm_info_t *inf){return inf->step_attivatore;}
+
 int shm_sem_get_startid(shm_info_t *inf){return inf->sem_start_id;}
-int shm_sem_get_n_atoms_now(shm_info_t *inf){return inf->n_atoms_now;}
+
+int shm_info_get_energy_prod_tot(shm_info_t *inf){return inf->energy_prod_tot;}
+int shm_info_get_energy_prod_laste_sec(shm_info_t *inf){return inf->energy_prod_laste_sec;}
+int shm_info_get_waste_tot(shm_info_t *inf){return inf->waste_tot;}
+int shm_info_get_waste_last_sec(shm_info_t *inf){return inf->waste_last_sec;}

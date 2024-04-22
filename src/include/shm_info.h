@@ -27,7 +27,12 @@ static void shm_info_set_n_new_atoms(shm_info_t *inf, int num_new_atoms);
 static void shm_info_set_sim_duration(shm_info_t *inf, int simulation_duration);
 static void shm_info_set_energy_explode_trashold(shm_info_t *inf, int nrg_explode_trashold);
 static void shm_info_set_step(shm_info_t *inf, long step_n_sec);
-void shm_info_set_n_atoms_now(shm_info_t *inf, int new);
+void shm_info_set_step_attivatore(shm_info_t *inf, int step_sec);
+
+void shm_info_set_energy_prod_tot(shm_info_t *inf, int energy_prod);
+void shm_info_set_energy_prod_laste_sec(shm_info_t *inf, int energy_prod_sec);
+void shm_info_set_waste_tot(shm_info_t *inf, int waste);
+void shm_info_set_waste_last_sec(shm_info_t *inf, int waste_sec);
 
 int msg_q_a_a_id_get(shm_info_t *inf);
 int shm_id_get(shm_info_t *inf);
@@ -41,6 +46,11 @@ int shm_info_get_sim_duration(shm_info_t *inf);
 int shm_info_get_energy_explode_trashold(shm_info_t *inf);
 long shm_info_get_step(shm_info_t *inf);
 int shm_sem_get_startid(shm_info_t *inf);
-int shm_sem_get_n_atoms_now(shm_info_t *inf);
+long shm_info_get_step_attivatore(shm_info_t *inf);
+
+int shm_info_get_energy_prod_tot(shm_info_t *inf);
+int shm_info_get_energy_prod_laste_sec(shm_info_t *inf);
+int shm_info_get_waste_tot(shm_info_t *inf);
+int shm_info_get_waste_last_sec(shm_info_t *inf);
 
 #endif

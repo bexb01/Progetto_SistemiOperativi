@@ -50,7 +50,7 @@ void sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags)
 	struct sembuf operation; //sembuf è una struct che specifica i parametri per le operazioni che svolge semop
 
 	operation = create_sembuf(sem_index, op_val, flags); //indica l'indice del semaforo su cui lavorare, il valore da assegnargli e i flag tipo ipc_nowait
-	while(semop(sem_id, &operation, 1) == -1); //fa l'operazione specificata da sembuf
+	while(semop(sem_id, &operation, 1) == -1); //fa l'operazione specificata da sembuf o la prova a fare fino a quando il risultato non è diverso da -1 cioè fino a quando non esegue l'op
 }
 
 void sem_delete(id_t sem_id)
@@ -58,6 +58,7 @@ void sem_delete(id_t sem_id)
 	if (semctl(sem_id, 0, IPC_RMID) < 0) { //cancella la lista di semafori specificando l'id
 		dprintf(2, "semaphore.c - sem_delete: Failed to delete semaphore set.\n");
 	}
+	printf("list semafori cancellata.\n");
 }
 
 static struct sembuf create_sembuf(int index, int semop_value, int flags)//popola la struct sembuf utilizzata da sem_ececute_semop

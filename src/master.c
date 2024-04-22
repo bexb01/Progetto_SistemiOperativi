@@ -63,15 +63,15 @@ int main(int argc, char *argv[]){
 		printf("attendo creazione figli\n");
 	}
 		//se siamo qui il semaforo è in stato ready	
+	int n_sec = shm_info_get_sim_duration(stats.info); //durata simulazione
 	printf("semaphore processi totali: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	printf("figli creati con successo\n");
 	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0); //allora semaforo simulazione a 1
 	printf("semaphore start : %d\n simulazione avviata\n", sem_getval(shm_sem_get_startid(stats.info), 1));
 
 	
-	int n_sec = shm_info_get_sim_duration(stats.info);
 	//close_and_exit();
-	exit_n_sec(n_sec); // gli do 35 sec di vita
+	exit_n_sec(n_sec);
 
 	/*alarm(1);
 
@@ -140,6 +140,28 @@ pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasf
 	
 }
 
+void take_energy(int energy_demand){ 	// preleva energy demand
+	while(sem_getval(shm_sem_get_startid(stats.info), 3)==0){
+	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
+	int energy_now=shm_info_get_energy_prod_tot(stats.info);
+	int energ = energy_now - energy_demand;
+	int explode;
+	if(energ > (explode=(shm_info_get_energy_explode_trashold(stats.info)))){
+		printf("EXPLODE - EXPLODE - EXPLODE l'energia totale al netto di quella consumata dal master: %d è maggiore del parametro massimo %d\n",energ , explode);
+		//bloccare l'esecuzione
+		close_and_exit();
+	}else if(energy_demand > energy_now){
+		printf("BLACKOUT - BLACKOUT - BLACKOUT l'energia consumata dal master: %d è maggiore dell'energia totale %d\n",energy_demand , energy_now);
+		//bloccare l'esecuzione
+		close_and_exit();
+	}else{
+		shm_info_set_energy_prod_tot(stats.info, energ);         //aggiorna mem condivisa in mutua escl
+		sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
+	}
+	
+}
+
 
 void exit_n_sec(int n_seconds){
     printf("Il processo master verrà terminato dopo %d secondi.\n", n_seconds);
@@ -159,6 +181,7 @@ void exit_n_sec(int n_seconds){
 void close_and_exit(){
 	msg_queue_remove(stats.info); //la creazione e la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
 	//shm_info_detach(stats.info);//funziona ma non bisogna fargliela fare al master perche la delete deve essere effettuata dal master e la delete funziona solo se fatta da un processo attaccato
+	sem_delete(shm_sem_get_startid(stats.info));
 	shm_info_delete(stats.info);
 
 	exit(0);
