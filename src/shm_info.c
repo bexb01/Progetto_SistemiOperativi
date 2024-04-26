@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "include/constants.h"
+#include <unistd.h>
+#include "include/constants.h" 
 #include "include/shm_info.h"
 #include "include/msg_comunication.h"
 
@@ -74,7 +75,7 @@ void param_init(char * file_path, shm_info_t *inf){
 		else if (strcmp(token, "STEP_ATTIVATORE") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_step_attivatore(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato energy explode threshold %d.\n", shm_info_get_energy_explode_trashold(inf));
+			printf("appena salvato step attivatore %d.\n", shm_info_get_step_attivatore(inf));
 		}
 	}
 }
@@ -104,31 +105,36 @@ void shm_info_detach(shm_info_t *inf){
 
 void shm_info_delete(shm_info_t *inf){
 	int shm_id = shm_id_get(inf);
-	printf("shm_id da cancellare %d", shm_id);
+	//printf("shm_id da cancellare %d", shm_id);
 	shm_delete(shm_id);
 }
 
 void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
-	inf->sem_start_id = sem_create(SEM_ID_READY, 7);
+	inf->sem_start_id = sem_create(SEM_ID_READY, 8);
 	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore
 	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore
 	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
 
 	sem_setval(inf->sem_start_id, 3, 1);    // energy_prod_tot sem 
 	sem_setval(inf->sem_start_id, 4, 1);    // energy_prod_laste_sec sem
-	sem_setval(inf->sem_start_id, 5, 0);    // waste_tot
-	sem_setval(inf->sem_start_id, 6, 0);    // waste_last_sec
+	sem_setval(inf->sem_start_id, 5, 1);    // waste_tot
+	sem_setval(inf->sem_start_id, 6, 1);    // waste_last_sec
+
+	sem_setval(inf->sem_start_id, 7, 1);    // end simulation sem
+
+
 }
 
-int shm_sem_ready(shm_info_t *inf){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
-	/* Semaphores */
+/*int shm_sem_ready(shm_info_t *inf){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
+	// Semaphores
 	int num_process = shm_info_get_n_atoms_init(inf)+2;
 	while (sem_getval(inf->sem_start_id, 0) < num_process) {
-		
+		printf("semaphore processi atom stampati da shm ogni secondo: %d\n", sem_getval(inf->sem_start_id, 0));
+		sleep(1);
     }
 	return 0;
-}
+}*/
 
 // Setters
 static void shm_info_set_id(shm_info_t *inf){inf->shm_info_id = shm_create(SHM_INFO_KEY, 0);}//shm_create usa shmget che ci restituirà l'id della mem condivisa se è 
@@ -162,7 +168,7 @@ int shm_info_get_n_new_atoms(shm_info_t *inf){return inf->n_new_atoms;}
 int shm_info_get_sim_duration(shm_info_t *inf){return inf->sim_duration;}
 int shm_info_get_energy_explode_trashold(shm_info_t *inf){return inf->energy_explode_trashold;}
 long shm_info_get_step(shm_info_t *inf){return inf->step;}
-long shm_info_get_step_attivatore(shm_info_t *inf){return inf->step_attivatore;}
+int shm_info_get_step_attivatore(shm_info_t *inf){return inf->step_attivatore;}
 
 int shm_sem_get_startid(shm_info_t *inf){return inf->sem_start_id;}
 

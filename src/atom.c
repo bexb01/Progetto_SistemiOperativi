@@ -1,4 +1,3 @@
-//include e define
 #define _GNU_SOURCE
 
 #include <stdlib.h>
@@ -17,10 +16,6 @@
 #include "../lib/semaphore.h"
 #include "include/msg_comunication.h"
 #include "include/shm_info.h"
-/*struct statistics {
-	//shared mem tutto quello che decideremo di metterci
-}*/
-
 struct atom_n_parent_child{
 	int atom_n_parent;
 	int atom_n_child;
@@ -33,10 +28,6 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
 					  //shm_info_t 
 };
-
-//void signal_handler(int signal);//da impl
-
-//void signal_handler_init(void);//da impl
 
 int split(int atomic_n); //metodo per la scissione atomica
 
@@ -56,9 +47,9 @@ int main(int argc, char *argv[]){
 	int atomic_number;
 	//int min_atomic_n = 24;
 	int received;
-    printf("atomo creato.\n");
+    //printf("atomo creato.\n");
 	shm_info_attach(&stats.info);
-	printf("atomo %d ha effettuato attach alla mem condivisa \n", getpid());
+	//printf("atomo %d ha effettuato attach alla mem condivisa \n", getpid());
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	printf("semaphore processi atom: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
@@ -69,27 +60,28 @@ int main(int argc, char *argv[]){
     atomic_number=random_atomic_n(max_atomic_n,max_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
 	int i=0;
 		sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
-		printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+		//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 	
-    printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
-	while (1){
-		printf("ancora vivo.\n");
+    //printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
+	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0){
+		//printf("ancora vivo.\n");
 		if((received=loop_rcv_msg(atomic_number))){//ricezzione di un messaggio gli dice di fare scissione
 			received=0;
-			printf("atomo si sta per scindere.\n");
+			//printf("atomo si sta per scindere.\n");
 			if(atomic_number > min_atomic_n){
 				atomic_number=split(atomic_number); //gli passiamo n atomico padre
-    			printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
+    			//printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
 			}else{
 				//se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
-				printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
-					sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
+				//printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
+					//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
 				printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 				update_waste(atomic_number);
 				close_and_exit();
 			}
 		}
 	}
+	close_and_exit();
 }
 
 int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre e figlio come atomic_n/2, magari dovrebbe salvare anche i pid nella mem condivisa? lo faremo se serve
@@ -101,8 +93,11 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 	}
 	pid_t process_pid;
 	if ((process_pid = fork()) == -1) {  // se errore
-		dprintf(2, "atom.c: Error in fork.\n");//gestione errore fork= meltdown
-		//close_all();//da implemantare
+		dprintf(2, "atom.c: Error in fork MELTDOWN MELTDOWN MELTDOWN .\n");//gestione errore fork= meltdown
+		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in atom\n");
+		//blocco esecuzione
+		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
+		close_and_exit();
 	} else if (process_pid == 0) { // se figlio 
 		//deve ricevere da padre il suo n atomico e aggiornare il num atom
 		if (close(p_c_pipe[1]) == -1) {// Chiudo il lato di scrittura della pipe
@@ -112,7 +107,7 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 		read(p_c_pipe[0], &atomic_n, sizeof(int));
 
 			sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
-			printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+			//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 
         //printf("figlio ha ricevuto natomico dal padre atomic_n = %d.\n", atomic_n);
 
@@ -175,6 +170,7 @@ void update_energy(struct  atom_n_parent_child p_c){
 	if(energy_val > (explode=(shm_info_get_energy_explode_trashold(stats.info)))){
 		printf("EXPLODE - EXPLODE - EXPLODE l'energia totale al netto di quella consumata dal master: %d è maggiore del parametro massimo %d\n",energy_val , explode);
 		//bloccare l'esecuzione
+		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else{
 		shm_info_set_energy_prod_tot(stats.info, energy_val);         //aggiorna mem condivisa in mutua escl
@@ -219,15 +215,17 @@ int random_atomic_n(int max, int min){
 int loop_rcv_msg(int atomic_n){
 	//struct comunication_msg msg_rcv;
 	int msg_q_id = msg_q_a_a_id_get(stats.info);
-	printf("id coda messaggi atomo a cui attaccarsi = %d", msg_q_id);
+	//printf("id coda messaggi atomo a cui attaccarsi = %d", msg_q_id);
 	struct comunication_msg msg_rcv;
 	msg_comunication_rcv(msg_q_id, atomic_n, &msg_rcv.sender, &msg_rcv.bool_split);
 	return msg_rcv.bool_split;
 }
 
 void close_and_exit(){
-	//msg_queue_remove(stats.info); //la creazione e la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
+	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
+	//msg_queue_remove(stats.info); //la creazione eS la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
 	shm_info_detach(stats.info);
 
+	//printf("terminazione del processo ATOM.\n");
 	exit(0);
 }

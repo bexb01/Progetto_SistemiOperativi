@@ -36,25 +36,27 @@ int main(int argc, char *argv[]){
     int atomic_n_to_split;
 	
 	shm_info_attach(&stats.info);//dobbiamo crearla in master, questo serve solo per fare attach, nel master fa create+ attach
-	int n_seconds=shm_info_get_step_attivatore(stats.info);
 	printf("shm attaccata activator.\n");
+	int n_seconds=shm_info_get_step_attivatore(stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	printf("semaphore processi activator: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
 
 	}
-	int i =0;
-	sleep_n_sec(10);
-	while(i<=20){
-		atomic_n_to_split=1;//adesso non c'è piu bisogno di specificare il numero atomico= tipo di messaggio
-		send_split_msg(atomic_n_to_split);
-		send_split_msg(atomic_n_to_split);
+	//sleep_n_sec(10);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
+	while(sem_getval(shm_sem_get_startid(stats.info), 7)>0){
+		if(sem_getval(shm_sem_get_startid(stats.info), 2)>0 ){
+			atomic_n_to_split=1;//adesso non c'è piu bisogno di specificare il numero atomico= tipo di messaggio
+			sleep_n_sec(n_seconds);
+			send_split_msg(atomic_n_to_split);
+			send_split_msg(atomic_n_to_split);
+			send_split_msg(atomic_n_to_split);
+			send_split_msg(atomic_n_to_split);
 		//printf("inviato messaggio split 55.\n");
-		sleep_n_sec(n_seconds);
-		
-		i=i+1;
+		}
 	}
-	void close_and_exit();
+	close_and_exit();
 }
 
 int send_split_msg(int atomic_n_rec){
@@ -72,7 +74,7 @@ int send_split_msg(int atomic_n_rec){
 }
 
 int sleep_n_sec(int n_seconds){//solo per rallentare il processo e vedere se funziona tutto 
-    printf("Il processo activator dormirà %d secondi.\n", n_seconds);
+    //printf("Il processo activator dormirà %d secondi.\n", n_seconds);
 
     // Aspetta n_secondi
     sleep(n_seconds);
@@ -82,8 +84,10 @@ int sleep_n_sec(int n_seconds){//solo per rallentare il processo e vedere se fun
 }
 
 void close_and_exit(){
+	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
 	//msg_queue_remove(stats.info);
 	shm_info_detach(stats.info);
 
+	printf("terminazione del processo ACTIVATOR.\n");
 	exit(0);
 }

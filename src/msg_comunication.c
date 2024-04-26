@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 
+#include <errno.h>
 #include <stdio.h>
 
 #include "include/shm_info.h"
@@ -35,7 +36,7 @@ struct comunication_msg create_msg_comunication(int  receiver_atomic_n, int send
 	ret.receiver = MSG_TYPE(receiver_atomic_n);
 	ret.sender = sender_id;
     ret.bool_split = boolean_split;
-	printf("messaggio composto \n");
+	//printf("messaggio composto \n");
 	return ret;
 }
 
@@ -51,24 +52,27 @@ int msg_comunication_rcv(int msg_q_id, int type, int *sender_id, int *boolean_sp
 	long ret;
 	struct comunication_msg msg_rcv;
 	int i=0;
-	printf("sto per cercare di ricevere su coda id %d e messaggio tipo %d\n",msg_q_id,type);
+	//printf("sto per cercare di ricevere su coda id %d e messaggio tipo %d\n",msg_q_id,type);
 	//do {
 		//printf("msg_comunication_rcv dopo questa sta in rcv %d %d\n", msg_q_id, type);
-		ret = msgrcv(msg_q_id, &msg_rcv, MSG_SIZE, 0, 0);//il quarto  parametro è il tipo di messaggio, mettendolo a 0 non verrà piu effettuato il controllo sul tipo ricevuto=ora non c'è bisogno di specificare il tipo di messaggio quindi il primo atomo a caso che riceve il messaggio lo cancella dalla coda messaggi
+		ret = msgrcv(msg_q_id, &msg_rcv, MSG_SIZE, 0, IPC_NOWAIT);//con ipc_nowait non è bloccante, se no gli atomi in rcv non muoiono perche rimangono in receive e nel frattempo activator magari è gia morto
 		//printf("msg_comunication_rcv aspetta messaggio su coda %d di tipo %d\n", msg_q_id, type);
 		/*if (!restarting && ret < 0)
 			return FALSE;*/
 		//i=i+1;
 	//} while(ret < 0 /*&& i<=1000*/);
 	if(ret>0){
-	printf("MESSAGGIO RICEVUTO00000000000000\n");
+	//printf("MESSAGGIO RICEVUTO00000000000000\n");
 	  	*sender_id = msg_rcv.sender;
 		*boolean_split= msg_rcv.bool_split;
 	}else if (ret == -1) {
-        perror("msgrcv");
-	//if(i!=1000){
 		*sender_id = 0;
 		*boolean_split= 0;
+        if (errno == ENOMSG) {
+        	//printf("La coda dei messaggi è vuota, riprovo.\n");
+    	} else {
+        	perror("Errore durante la lettura dalla coda dei messaggi");
+		}
 	}
 
 	return ret;
