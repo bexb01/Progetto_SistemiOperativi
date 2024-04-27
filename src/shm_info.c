@@ -81,18 +81,20 @@ void param_init(char * file_path, shm_info_t *inf){
 }
 
 //inf è l'istanza di tipo shm_info_t puntata, *inf è il puntatore che la punta e **inf e il puntatore di puntatore che punta a *inf
-void shm_info_attach(shm_info_t **inf){//questo metodo fai sia create che attach alla mem condivisa con la kay shm_info_key e un segmento di grandezzashm_info_t
+int shm_info_attach(shm_info_t **inf){//questo metodo fai sia create che attach alla mem condivisa con la kay shm_info_key e un segmento di grandezzashm_info_t
 	int shm_id;
 
 	shm_id = shm_create(SHM_INFO_KEY, sizeof(shm_info_t));
 	if (shm_id == -1) {
 		dprintf(1, "do something\n");
+		
 	}
 	//*inf non è nient'altro che un puntatore di tipo shm_info_t salvato nella struct stats della funzione chiamante, la struct che contiene puntatori a tutti i segmenti
 	//di mem condivisa che servono al processo chiamante 
 	*inf = (shm_info_t *)shm_attach(shm_id);//non bisogna fare return di *inf perche è puntato da **inf che è gia visibile al chaiamnte? e quindi puo accedere a *inf
 	//+ castato in shm_info_t * perche mi restituisce un puntatore a void void * (cioè di tipo generico)quindi bisogna indicargli che tipo di puntatore deve dientare
 	shm_info_set_id( *inf); //settiamo l'id nella mem cond, bisognerà toglierlo da qui e metterlo nel mrtodo che legge da path che userà solo il master all'avvio
+	return shm_id;
 }
 //se al posto del puntatore avessimo messo direttament la struct inf allora avrebbe creato una copia della struct e avrebbe modificato la copia ma non la struct originaria, invece inviando il puntatore o l'indirizzo della struct noi la modifichiamo direttamente, evitando copie e quindi risparmiando tempo e memoria
 void msg_q_a_a_init(shm_info_t *inf){//quando inviamo un puntatore ad una struttura, per accedere direttamente ai campi della struttua si usa la notazione inf->msg_q_atom_activator_id vhe indiche che msg_q_atom_activator_è l'elemento della struttura da accesdere

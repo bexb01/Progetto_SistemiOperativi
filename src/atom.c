@@ -48,7 +48,9 @@ int main(int argc, char *argv[]){
 	//int min_atomic_n = 24;
 	int received;
     //printf("atomo creato.\n");
-	shm_info_attach(&stats.info);
+	if(shm_info_attach(&stats.info)==-1){
+		exit(EXIT_FAILURE);
+	}
 	//printf("atomo %d ha effettuato attach alla mem condivisa \n", getpid());
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	printf("semaphore processi atom: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
@@ -98,7 +100,10 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 		//blocco esecuzione
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
-	} else if (process_pid == 0) { // se figlio 
+	} else if (process_pid == 0) { // se figlio
+		if(shm_info_attach(&stats.info)==-1){
+		exit(EXIT_FAILURE);
+		} 
 		//deve ricevere da padre il suo n atomico e aggiornare il num atom
 		if (close(p_c_pipe[1]) == -1) {// Chiudo il lato di scrittura della pipe
 			 perror("close write pipe child err\n");
@@ -113,7 +118,7 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 
 		if (close(p_c_pipe[0]) == -1) {  // Chiudo il lato di lettura della pipe
        		perror("close read pipe child err\n");
-        	exit(EXIT_FAILURE);
+    		exit(EXIT_FAILURE);
     	}
 		return atomic_n;
 	} else {//padre

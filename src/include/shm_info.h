@@ -4,7 +4,7 @@
 
 typedef struct shm_inf shm_info_t; //shm_info_t adesso è l'allias di shm_info
 
-void shm_info_attach(shm_info_t **inf);
+int shm_info_attach(shm_info_t **inf);
 
 void param_init(char * file_path, shm_info_t *inf);
 
