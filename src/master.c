@@ -37,6 +37,8 @@ pid_t run_process(char *name, int index);
 
 void exit_n_sec(int n_seconds);
 
+void take_energy(void);
+
 void signal_handler(int signal);
 
 void set_signal_handler(void);
@@ -82,10 +84,8 @@ int main(int argc, char *argv[]){
 	//alarm(1);
 
 	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0) {
-		sleep(1);
-		if(sem_getval(shm_sem_get_startid(stats.info), 7)==0){
-			close_and_exit();
-		}else if(shm_info_get_sim_duration(stats.info)==0){
+
+		if(shm_info_get_sim_duration(stats.info)<=0){
 			printf("TIME OUT TIME OUT TIMEOUT TIME OUT TIMEOUT: 0");
 			//periodic_print();
 			sem_setval(shm_sem_get_startid(stats.info), 7, 0);
@@ -96,6 +96,8 @@ int main(int argc, char *argv[]){
 			printf("TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE %d \n", shm_info_get_sim_duration(stats.info));
 			//periodic_print();
 		}
+		sleep(1);
+		take_energy();
 	}
 	close_and_exit();
 //bho
@@ -163,10 +165,11 @@ pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasf
 	
 }
 
-void take_energy(int energy_demand){ 	// preleva energy demand
+void take_energy(){ 	// preleva energy demand
 	while(sem_getval(shm_sem_get_startid(stats.info), 3)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
+	int energy_demand=shm_info_get_energy_demand(stats.info);
 	int energy_now=shm_info_get_energy_prod_tot(stats.info);
 	int energ = energy_now - energy_demand;
 	int explode;

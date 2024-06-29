@@ -40,6 +40,7 @@ void close_and_exit();
 int loop_rcv_msg(int atomic_n);
 int random_atomic_n(int max, int min);
 void update_waste(int waste);
+int ctrl_sem_getval(int sem_id, int sem_n);
 
 struct stats stats;
 
@@ -53,9 +54,9 @@ int main(int argc, char *argv[]){
 	}
 	//printf("atomo %d ha effettuato attach alla mem condivisa \n", getpid());
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
-	printf("semaphore processi atom: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
-	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
-
+	printf("semaphore processi atom: %d\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 0));
+	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
+		sleep(1);
 	}
 	int min_atomic_n = shm_info_get_min_n_atoms(stats.info);
 	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]){
 		//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 	
     //printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
-	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0){
+	while (ctrl_sem_getval(shm_sem_get_startid(stats.info), 7)>0){
 		//printf("ancora vivo.\n");
 		if((received=loop_rcv_msg(atomic_number))){//ricezzione di un messaggio gli dice di fare scissione
 			received=0;
@@ -77,10 +78,12 @@ int main(int argc, char *argv[]){
 				//se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
 				//printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
 					//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
-				printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+				printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 2));
 				update_waste(atomic_number);
 				close_and_exit();
 			}
+		}else{
+			sleep(1);
 		}
 	}
 	close_and_exit();
@@ -156,7 +159,7 @@ struct  atom_n_parent_child atomic_n_to_split(int atomic_n){//splitto sempre per
 	}
 }
 void update_waste(int waste){// aggiorna le scorie in mem condivisa
-	while(sem_getval(shm_sem_get_startid(stats.info), 5)==0){
+	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 5)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
 	waste = waste+ shm_info_get_waste_tot(stats.info);
@@ -167,7 +170,7 @@ void update_waste(int waste){// aggiorna le scorie in mem condivisa
 void update_energy(struct  atom_n_parent_child p_c){
 	int energy_val;
 	energy_val=energy(p_c);
-	while(sem_getval(shm_sem_get_startid(stats.info), 3)==0){
+	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 3)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 	energy_val=energy_val+shm_info_get_energy_prod_tot(stats.info);
@@ -224,6 +227,14 @@ int loop_rcv_msg(int atomic_n){
 	struct comunication_msg msg_rcv;
 	msg_comunication_rcv(msg_q_id, atomic_n, &msg_rcv.sender, &msg_rcv.bool_split);
 	return msg_rcv.bool_split;
+}
+
+int ctrl_sem_getval(int sem_id, int sem_n){
+	int res;
+	if((res=sem_getval(sem_id, sem_n))<0){
+		close_and_exit();
+	}
+	return res;
 }
 
 void close_and_exit(){

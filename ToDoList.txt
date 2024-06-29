@@ -1,3 +1,23 @@
 master: La simulazione dovr`a partire solamente quando tutti i processi sopra citati sono stati
 creati e hanno eseguito le rispettive istruzioni di inizializzazione,
 quindi sincronizzare in qualche modo, magari con un semaforo
+
+
+
+stampe ogni secondo:
+numero di attivazioni occorse ad opera del processo attivatore (totali e relative all’ultimo secondo)=
+ogni messaggio ricevuto da un atomo deve aumentare il contatore, master deve stampare il contatore
+
+numero di scissioni (totali e relative all’ultimo secondo);=
+ogni scissione bisogna aumentare di 1 il contatore da atom, master deve stampare il contatore
+
+quantit`a di energia prodotta (totale e relativa all’ultimo secondo);
+gli atomi quando si scindono gia screano e aggiornano energia, il master deve stampare
+
+quantit`a di energia consumata (totale e relativa all’ultimo secondo);
+il master gia  consuma energia, deve solo stampare
+
+quantit`a di scorie prodotte (totale e relativa all’ultimo secondo);
+forse atom gia aggiorna le scorie, master deve solo stampare
+
+errore del makefile quando uso make killall kill

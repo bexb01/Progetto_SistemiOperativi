@@ -48,11 +48,11 @@ int main(int argc, char *argv[]){
 	while(sem_getval(shm_sem_get_startid(stats.info), 7)>0){
 		if(sem_getval(shm_sem_get_startid(stats.info), 2)>0 ){
 			atomic_n_to_split=1;//adesso non c'è piu bisogno di specificare il numero atomico= tipo di messaggio
+			send_split_msg(atomic_n_to_split);
+			send_split_msg(atomic_n_to_split);
+			send_split_msg(atomic_n_to_split);
+			send_split_msg(atomic_n_to_split);
 			sleep_n_sec(n_seconds);
-			send_split_msg(atomic_n_to_split);
-			send_split_msg(atomic_n_to_split);
-			send_split_msg(atomic_n_to_split);
-			send_split_msg(atomic_n_to_split);
 		//printf("inviato messaggio split 55.\n");
 		}
 	}

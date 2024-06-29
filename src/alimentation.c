@@ -61,7 +61,7 @@ void init_atoms(void){
 	pid_t pid;
 	//n_atoms= get_atoms(state.general); //legge da struct state campo general in cui ci ha salvato i dati  a noi deve leggere campo N_NUOVI_ATOMI
 	n_new_atoms=shm_info_get_n_new_atoms(stats.info); //a scopo di debugging iniziamo con 1 nuovi atomi 
-	for(i=0; i< n_new_atoms; i++){
+	for(i=0; (i< n_new_atoms) && (sem_getval(shm_sem_get_startid(stats.info), 7)>0); i++){
 		pid= run_process("./atom", i);
 		//shm_port_set_pid(state.ports, i, pid);//penso scriva in memoria condivisa i dati dei porti nel suo caso, degli atomi nel nostro, non so se ci serve
 	}

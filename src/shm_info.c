@@ -114,7 +114,7 @@ void shm_info_delete(shm_info_t *inf){
 void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
 	inf->sem_start_id = sem_create(SEM_ID_READY, 8);
-	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore
+	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore 
 	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore
 	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
 
