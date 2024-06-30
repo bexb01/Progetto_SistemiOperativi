@@ -37,7 +37,7 @@ int energy(struct atom_n_parent_child);
 struct  atom_n_parent_child atomic_n_to_split(int atomic_n);
 int exit_n_sec(int n_seconds);
 void close_and_exit();
-int loop_rcv_msg(int atomic_n);
+int rcv_msg(int atomic_n);
 int random_atomic_n(int max, int min);
 void update_waste(int waste);
 int ctrl_sem_getval(int sem_id, int sem_n);
@@ -46,8 +46,7 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
 	int atomic_number;
-	//int min_atomic_n = 24;
-	int received;
+	//int min_atomic_n = 24
     //printf("atomo creato.\n");
 	if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
@@ -68,9 +67,14 @@ int main(int argc, char *argv[]){
     //printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
 	while (ctrl_sem_getval(shm_sem_get_startid(stats.info), 7)>0){
 		//printf("ancora vivo.\n");
-		if((received=loop_rcv_msg(atomic_number))){//ricezzione di un messaggio gli dice di fare scissione
-			received=0;
-			//printf("atomo si sta per scindere.\n");
+		if(rcv_msg(atomic_number)){//ricezzione di un messaggio gli dice di fare scissione
+			
+			while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 8)==0){
+			}
+				sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
+				shm_info_set_n_activation_tot(stats.info, 1);//aumento attivazioni in MUTUA ESCLUSIONE
+				sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
+
 			if(atomic_number > min_atomic_n){
 				atomic_number=split(atomic_number); //gli passiamo n atomico padre
     			//printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
@@ -115,6 +119,13 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 		read(p_c_pipe[0], &atomic_n, sizeof(int));
 
 			sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
+
+			while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 9)==0){
+			}
+				sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
+				shm_info_set_n_split_tot(stats.info, 1);//aumento attivazioni in MUTUA ESCLUSIONE
+				sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
+
 			//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 
         //printf("figlio ha ricevuto natomico dal padre atomic_n = %d.\n", atomic_n);
@@ -220,7 +231,7 @@ int random_atomic_n(int max, int min){
     return rand() % (max - min+ 1) + min;
 }
 
-int loop_rcv_msg(int atomic_n){
+int rcv_msg(int atomic_n){
 	//struct comunication_msg msg_rcv;
 	int msg_q_id = msg_q_a_a_id_get(stats.info);
 	//printf("id coda messaggi atomo a cui attaccarsi = %d", msg_q_id);

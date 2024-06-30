@@ -33,7 +33,10 @@ void shm_info_set_energy_prod_tot(shm_info_t *inf, int energy_prod);
 void shm_info_set_energy_prod_laste_sec(shm_info_t *inf, int energy_prod_sec);
 void shm_info_set_waste_tot(shm_info_t *inf, int waste);
 void shm_info_set_waste_last_sec(shm_info_t *inf, int waste_sec);
-
+void shm_info_set_n_activation_tot(shm_info_t *inf, int n_activation);
+void shm_info_set_n_activation_last_sec(shm_info_t *inf, int activation_last_sec);
+void shm_info_set_n_split_tot(shm_info_t *inf, int n_split);
+void shm_info_set_n_split_last_sec(shm_info_t *inf, int split_last_sec);
 int msg_q_a_a_id_get(shm_info_t *inf);
 int shm_id_get(shm_info_t *inf);
 
@@ -52,5 +55,9 @@ int shm_info_get_energy_prod_tot(shm_info_t *inf);
 int shm_info_get_energy_prod_laste_sec(shm_info_t *inf);
 int shm_info_get_waste_tot(shm_info_t *inf);
 int shm_info_get_waste_last_sec(shm_info_t *inf);
+int shm_info_get_n_activation_tot(shm_info_t *inf);
+int shm_info_get_n_activation_last_sec(shm_info_t *inf);
+int shm_info_get_n_split_tot(shm_info_t *inf);
+int shm_info_get_n_split_last_sec(shm_info_t *inf);
 
 #endif

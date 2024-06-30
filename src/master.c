@@ -82,19 +82,21 @@ int main(int argc, char *argv[]){
 	//exit_n_sec(n_sec);
 
 	//alarm(1);
+	shm_info_set_n_activation_last_sec(stats.info, 0);
+	shm_info_set_n_split_last_sec(stats.info, 0);
 
 	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0) {
 
 		if(shm_info_get_sim_duration(stats.info)<=0){
 			printf("TIME OUT TIME OUT TIMEOUT TIME OUT TIMEOUT: 0");
-			//periodic_print();
+			periodic_print();
 			sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 			close_and_exit();
 		}else if(shm_info_get_sim_duration(stats.info)>0){
 			//alarm(1);
 			shm_info_set_sim_duration(stats.info, shm_info_get_sim_duration(stats.info)-1);
 			printf("TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE %d \n", shm_info_get_sim_duration(stats.info));
-			//periodic_print();
+			periodic_print();
 		}
 		sleep(1);
 		take_energy();
@@ -168,7 +170,7 @@ pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasf
 void take_energy(){ 	// preleva energy demand
 	while(sem_getval(shm_sem_get_startid(stats.info), 3)==0){
 	}
-	sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
 	int energy_demand=shm_info_get_energy_demand(stats.info);
 	int energy_now=shm_info_get_energy_prod_tot(stats.info);
 	int energ = energy_now - energy_demand;
@@ -185,7 +187,7 @@ void take_energy(){ 	// preleva energy demand
 		close_and_exit();
 	}else{
 		shm_info_set_energy_prod_tot(stats.info, energ);         //aggiorna mem condivisa in mutua escl
-		sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 	}
 	
 }
@@ -201,15 +203,15 @@ void signal_handler(int signal){
 		if(sem_getval(shm_sem_get_startid(stats.info), 7)==0){
 			close_and_exit();
 		}else if(shm_info_get_sim_duration(stats.info)==0){
-			printf("STAMPA FINALE, secondi rimanenti: 0");
-			//periodic_print();
+			printf("STAMPA FINALE, secondi rimanenti: 0\n");
+			periodic_print();
 			sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 			close_and_exit();
 		}else if(shm_info_get_sim_duration(stats.info)>0){
 			alarm(1);
 			shm_info_set_sim_duration(stats.info, shm_info_get_sim_duration(stats.info)-1);
-			printf("TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE %d", shm_info_get_sim_duration(stats.info));
-			//periodic_print();
+			printf("TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE %d\n", shm_info_get_sim_duration(stats.info));
+			periodic_print();
 		}
 		break;
 	default:
@@ -218,7 +220,29 @@ void signal_handler(int signal){
 }
 
 void periodic_print(void){
+	int print;
+	int temp;
+	while(sem_getval(shm_sem_get_startid(stats.info), 9)==0){
+			}
+				sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
+				print=shm_info_get_n_split_tot(stats.info);//leggo 
+				printf("scissioni totali = %d \n" , print );//stampo scissioni totali
+				temp=print;
+				print=print-shm_info_get_n_split_last_sec(stats.info); //calcolo le scissioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
+				printf("scissioni ultimo secondo  = %d\n", print );//stampo scissioni ultimo secondo
+				shm_info_set_n_split_last_sec(stats.info, temp);
+				sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
 
+	while(sem_getval(shm_sem_get_startid(stats.info), 8)==0){
+			}
+				sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
+				print=shm_info_get_n_activation_tot(stats.info);//leggo
+				printf("attivazioni totali = %d\n" , print);//stampo le attivazioni totali
+				temp=print;
+				print=print-shm_info_get_n_activation_last_sec(stats.info); //calcolo le attivazioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
+				printf("attivazioni ultimo secondo  = %d\n", print );//stampo attivazioni ultimo secondo
+				shm_info_set_n_activation_last_sec(stats.info, temp);
+				sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
 }
 
 void set_signal_handler(void){
@@ -265,6 +289,7 @@ void exit_n_sec(int n_seconds){
 void close_and_exit(){
 	while(sem_getval(shm_sem_get_startid(stats.info), 2)>0)
 	{//printf("atomi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+		sleep(1);
 	}
 	msg_queue_remove(stats.info); //la creazione e la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
 	//shm_info_detach(stats.info);//funziona ma non bisogna fargliela fare al master perche la delete deve essere effettuata dal master e la delete funziona solo se fatta da un processo attaccato

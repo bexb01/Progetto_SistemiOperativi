@@ -113,7 +113,7 @@ void shm_info_delete(shm_info_t *inf){
 
 void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
-	inf->sem_start_id = sem_create(SEM_ID_READY, 8);
+	inf->sem_start_id = sem_create(SEM_ID_READY, 10);
 	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore 
 	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore
 	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
@@ -124,6 +124,9 @@ void shm_sem_init(shm_info_t *inf){// cera i semafori
 	sem_setval(inf->sem_start_id, 6, 1);    // waste_last_sec
 
 	sem_setval(inf->sem_start_id, 7, 1);    // end simulation sem
+
+	sem_setval(inf->sem_start_id, 8, 1);    // n_activation_tot
+	sem_setval(inf->sem_start_id, 9, 1);    // n_split_tot
 
 
 }
@@ -156,6 +159,10 @@ void shm_info_set_energy_prod_tot(shm_info_t *inf, int energy_prod){inf->energy_
 void shm_info_set_energy_prod_laste_sec(shm_info_t *inf, int energy_prod_sec){inf->energy_prod_laste_sec=energy_prod_sec;}
 void shm_info_set_waste_tot(shm_info_t *inf, int waste){inf->waste_tot=waste;}
 void shm_info_set_waste_last_sec(shm_info_t *inf, int waste_sec){inf->waste_last_sec=waste_sec;}
+void shm_info_set_n_activation_tot(shm_info_t *inf, int n_activation){inf->n_activation_tot=inf->n_activation_tot+n_activation;}
+void shm_info_set_n_activation_last_sec(shm_info_t *inf, int activation_last_sec){inf->n_activation_last_sec=activation_last_sec;}
+void shm_info_set_n_split_tot(shm_info_t *inf, int n_split){inf->n_split_tot=inf->n_split_tot+n_split;}
+void shm_info_set_n_split_last_sec(shm_info_t *inf, int split_last_sec){inf->n_split_last_sec=split_last_sec;}
 
 //getters
 //void shm_info_get_id(shm_info_t +inf)
@@ -178,3 +185,7 @@ int shm_info_get_energy_prod_tot(shm_info_t *inf){return inf->energy_prod_tot;}
 int shm_info_get_energy_prod_laste_sec(shm_info_t *inf){return inf->energy_prod_laste_sec;}
 int shm_info_get_waste_tot(shm_info_t *inf){return inf->waste_tot;}
 int shm_info_get_waste_last_sec(shm_info_t *inf){return inf->waste_last_sec;}
+int shm_info_get_n_activation_tot(shm_info_t *inf){return inf->n_activation_tot;}
+int shm_info_get_n_activation_last_sec(shm_info_t *inf){return inf->n_activation_last_sec;}
+int shm_info_get_n_split_tot(shm_info_t *inf){return inf->n_split_tot;}
+int shm_info_get_n_split_last_sec(shm_info_t *inf){return inf->n_split_last_sec;}
