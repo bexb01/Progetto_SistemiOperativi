@@ -5,13 +5,13 @@ quindi sincronizzare in qualche modo, magari con un semaforo
 
 
 stampe ogni secondo:
-numero di attivazioni occorse ad opera del processo attivatore (totali e relative all’ultimo secondo)=
+FATTO numero di attivazioni occorse ad opera del processo attivatore (totali e relative all’ultimo secondo)=
 ogni messaggio ricevuto da un atomo deve aumentare il contatore, master deve stampare il contatore
 
-numero di scissioni (totali e relative all’ultimo secondo);=
+FATTO numero di scissioni (totali e relative all’ultimo secondo);=
 ogni scissione bisogna aumentare di 1 il contatore da atom, master deve stampare il contatore
 
-quantit`a di energia prodotta (totale e relativa all’ultimo secondo);
+FATTO quantit`a di energia prodotta (totale e relativa all’ultimo secondo);
 gli atomi quando si scindono gia screano e aggiornano energia, il master deve stampare
 
 quantit`a di energia consumata (totale e relativa all’ultimo secondo);

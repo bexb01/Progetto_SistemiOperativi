@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <errno.h>
+#include <fcntl.h>
 
 
 #include "../lib/semaphore.h"
@@ -38,6 +39,7 @@ struct  atom_n_parent_child atomic_n_to_split(int atomic_n);
 int exit_n_sec(int n_seconds);
 void close_and_exit();
 int rcv_msg(int atomic_n);
+void init_random();
 int random_atomic_n(int max, int min);
 void update_waste(int waste);
 int ctrl_sem_getval(int sem_id, int sem_n);
@@ -59,7 +61,9 @@ int main(int argc, char *argv[]){
 	}
 	int min_atomic_n = shm_info_get_min_n_atoms(stats.info);
 	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
-    atomic_number=random_atomic_n(max_atomic_n,max_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
+	init_random();
+    atomic_number=random_atomic_n(max_atomic_n,min_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
+	printf("numero atomico = %d \n", atomic_number);
 	int i=0;
 		sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 		//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
@@ -83,7 +87,7 @@ int main(int argc, char *argv[]){
 				//printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
 					//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
 				printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 2));
-				update_waste(atomic_number);
+				update_waste(1);
 				close_and_exit();
 			}
 		}else{
@@ -172,18 +176,19 @@ struct  atom_n_parent_child atomic_n_to_split(int atomic_n){//splitto sempre per
 void update_waste(int waste){// aggiorna le scorie in mem condivisa
 	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 5)==0){
 	}
-	sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 5, -1, 0);
 	waste = waste+ shm_info_get_waste_tot(stats.info);
 	shm_info_set_waste_tot(stats.info, waste);         //aggiorna mem condivisa in mutua escl
-	sem_execute_semop(shm_sem_get_startid(stats.info), 5, -1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
 }   
 
 void update_energy(struct  atom_n_parent_child p_c){
 	int energy_val;
 	energy_val=energy(p_c);
-	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 3)==0){
+	while((ctrl_sem_getval(shm_sem_get_startid(stats.info), 3)==0) && sem_getval(shm_sem_get_startid(stats.info), 4)==0){
 	}
-	sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 4, -1, 0);
 	energy_val=energy_val+shm_info_get_energy_prod_tot(stats.info);
 	int explode;
 	if(energy_val > (explode=(shm_info_get_energy_explode_trashold(stats.info)))){
@@ -192,8 +197,10 @@ void update_energy(struct  atom_n_parent_child p_c){
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else{
+		shm_info_set_energy_prod(stats.info, energy(p_c));
 		shm_info_set_energy_prod_tot(stats.info, energy_val);         //aggiorna mem condivisa in mutua escl
-		sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
 	}
 }
 
@@ -223,11 +230,15 @@ int exit_n_sec(int n_seconds){
     printf("Questa riga non verrà mai stampata.\n");
 }
 
+void init_random() {
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    unsigned int seed = ts.tv_nsec ^ getpid();
+    srand(seed);
+}
+
 int random_atomic_n(int max, int min){
-	// Inizializza il generatore di numeri casuali con il tempo corrente come seme cosi che ogni volta sia inizializzato con un valore diverso
-    srand(time(NULL));
-    
-    // Genera un numero casuale compreso tra n e m
+    // Genera un numero casuale compreso tra max e min
     return rand() % (max - min+ 1) + min;
 }
 

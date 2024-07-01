@@ -84,6 +84,9 @@ int main(int argc, char *argv[]){
 	//alarm(1);
 	shm_info_set_n_activation_last_sec(stats.info, 0);
 	shm_info_set_n_split_last_sec(stats.info, 0);
+	shm_info_set_energy_prod_laste_sec(stats.info, 0);
+	shm_info_set_energy_cons_last_sec(stats.info, 0);
+	shm_info_set_waste_last_sec(stats.info, 0);  
 
 	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0) {
 
@@ -187,6 +190,7 @@ void take_energy(){ 	// preleva energy demand
 		close_and_exit();
 	}else{
 		shm_info_set_energy_prod_tot(stats.info, energ);         //aggiorna mem condivisa in mutua escl
+		shm_info_set_energy_cons_tot(stats.info, energy_demand);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 	}
 	
@@ -223,26 +227,55 @@ void periodic_print(void){
 	int print;
 	int temp;
 	while(sem_getval(shm_sem_get_startid(stats.info), 9)==0){
-			}
-				sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
-				print=shm_info_get_n_split_tot(stats.info);//leggo 
-				printf("scissioni totali = %d \n" , print );//stampo scissioni totali
-				temp=print;
-				print=print-shm_info_get_n_split_last_sec(stats.info); //calcolo le scissioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
-				printf("scissioni ultimo secondo  = %d\n", print );//stampo scissioni ultimo secondo
-				shm_info_set_n_split_last_sec(stats.info, temp);
-				sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
+	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
+	print=shm_info_get_n_split_tot(stats.info);//leggo 
+	printf("scissioni totali = %d \n" , print );//stampo scissioni totali
+	temp=print;
+	print=print-shm_info_get_n_split_last_sec(stats.info); //calcolo le scissioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
+	printf("scissioni ultimo secondo  = %d\n", print );//stampo scissioni ultimo secondo
+	shm_info_set_n_split_last_sec(stats.info, temp);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
 
 	while(sem_getval(shm_sem_get_startid(stats.info), 8)==0){
-			}
-				sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
-				print=shm_info_get_n_activation_tot(stats.info);//leggo
-				printf("attivazioni totali = %d\n" , print);//stampo le attivazioni totali
-				temp=print;
-				print=print-shm_info_get_n_activation_last_sec(stats.info); //calcolo le attivazioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
-				printf("attivazioni ultimo secondo  = %d\n", print );//stampo attivazioni ultimo secondo
-				shm_info_set_n_activation_last_sec(stats.info, temp);
-				sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
+	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
+	print=shm_info_get_n_activation_tot(stats.info);//leggo
+	printf("attivazioni totali = %d\n" , print);//stampo le attivazioni totali
+	temp=print;
+	print=print-shm_info_get_n_activation_last_sec(stats.info); //calcolo le attivazioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
+	printf("attivazioni ultimo secondo  = %d\n", print );//stampo attivazioni ultimo secondo
+	shm_info_set_n_activation_last_sec(stats.info, temp);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
+
+	while(sem_getval(shm_sem_get_startid(stats.info), 4)==0){
+	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 4, -1, 0);
+	print=shm_info_get_energy_prod(stats.info);//leggo
+	printf("energia prodotta totale = %d\n" , print);//stampo le attivazioni totali
+	temp=print;
+	print=print-shm_info_get_energy_prod_laste_sec(stats.info); //calcolo le attivazioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
+	printf("energia prodotta ultimo secondo  = %d\n", print );//stampo attivazioni ultimo secondo
+	shm_info_set_energy_prod_laste_sec(stats.info, temp);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
+	
+	while(sem_getval(shm_sem_get_startid(stats.info), 5)==0){
+	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 5, -1, 0);
+	print=shm_info_get_waste_tot(stats.info);
+	printf("waste totale = %d\n" , print);
+	temp=print;
+	print=print-shm_info_get_waste_last_sec(stats.info);
+	printf("waste ultimo secondo  = %d\n", print );
+	shm_info_set_waste_last_sec(stats.info, temp);      //aggiorna mem condivisa in mutua escl
+	sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
+
+	print=shm_info_get_energy_cons_tot(stats.info);
+	printf("energia consumata totale  = %d\n", print );
+	temp=print;
+	print=print-shm_info_get_energy_cons_last_sec(stats.info);
+	printf("energia consumata ultimo secondo  = %d\n", print );
+	shm_info_set_energy_cons_last_sec(stats.info, temp);
 }
 
 void set_signal_handler(void){

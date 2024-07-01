@@ -12,7 +12,7 @@
 
 struct shm_inf{
 	int energy_demand, n_atoms_init, n_atom_max, min_n_atoms, n_new_atoms, sim_duration, energy_explode_trashold, step_attivatore;
-	int n_activation_tot, n_activation_last_sec, n_split_tot, n_split_last_sec, energy_prod_tot, energy_prod_laste_sec,
+	int n_activation_tot, n_activation_last_sec, n_split_tot, n_split_last_sec, energy_prod_tot, energy_prod_laste_sec, energy_prod,
 		energy_cons_tot, energy_cons_last_sec, waste_tot, waste_last_sec;
 	long step;
 	int shm_info_id;
@@ -119,7 +119,7 @@ void shm_sem_init(shm_info_t *inf){// cera i semafori
 	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
 
 	sem_setval(inf->sem_start_id, 3, 1);    // energy_prod_tot sem 
-	sem_setval(inf->sem_start_id, 4, 1);    // energy_prod_laste_sec sem
+	sem_setval(inf->sem_start_id, 4, 1);    // energy_prod_ e last sec sem
 	sem_setval(inf->sem_start_id, 5, 1);    // waste_tot
 	sem_setval(inf->sem_start_id, 6, 1);    // waste_last_sec
 
@@ -155,6 +155,7 @@ void shm_info_set_energy_explode_trashold(shm_info_t *inf, int nrg_explode_trash
 void shm_info_set_step(shm_info_t *inf, long step_n_sec){inf->step=step_n_sec;}
 void shm_info_set_step_attivatore(shm_info_t *inf, int step_sec){inf->step_attivatore=step_sec;}
 
+void shm_info_set_energy_prod(shm_info_t *inf, int energy_product){inf->energy_prod=inf->energy_prod+energy_product;}
 void shm_info_set_energy_prod_tot(shm_info_t *inf, int energy_prod){inf->energy_prod_tot=energy_prod;}
 void shm_info_set_energy_prod_laste_sec(shm_info_t *inf, int energy_prod_sec){inf->energy_prod_laste_sec=energy_prod_sec;}
 void shm_info_set_waste_tot(shm_info_t *inf, int waste){inf->waste_tot=waste;}
@@ -163,6 +164,8 @@ void shm_info_set_n_activation_tot(shm_info_t *inf, int n_activation){inf->n_act
 void shm_info_set_n_activation_last_sec(shm_info_t *inf, int activation_last_sec){inf->n_activation_last_sec=activation_last_sec;}
 void shm_info_set_n_split_tot(shm_info_t *inf, int n_split){inf->n_split_tot=inf->n_split_tot+n_split;}
 void shm_info_set_n_split_last_sec(shm_info_t *inf, int split_last_sec){inf->n_split_last_sec=split_last_sec;}
+void shm_info_set_energy_cons_tot(shm_info_t *inf, int energy_cons){inf->energy_cons_tot=inf->energy_cons_tot+energy_cons;}
+void shm_info_set_energy_cons_last_sec(shm_info_t *inf, int energy_cons_sec){inf->energy_cons_last_sec=energy_cons_sec;}
 
 //getters
 //void shm_info_get_id(shm_info_t +inf)
@@ -181,6 +184,7 @@ int shm_info_get_step_attivatore(shm_info_t *inf){return inf->step_attivatore;}
 
 int shm_sem_get_startid(shm_info_t *inf){return inf->sem_start_id;}
 
+int shm_info_get_energy_prod(shm_info_t *inf){return inf->energy_prod;}
 int shm_info_get_energy_prod_tot(shm_info_t *inf){return inf->energy_prod_tot;}
 int shm_info_get_energy_prod_laste_sec(shm_info_t *inf){return inf->energy_prod_laste_sec;}
 int shm_info_get_waste_tot(shm_info_t *inf){return inf->waste_tot;}
@@ -189,3 +193,5 @@ int shm_info_get_n_activation_tot(shm_info_t *inf){return inf->n_activation_tot;
 int shm_info_get_n_activation_last_sec(shm_info_t *inf){return inf->n_activation_last_sec;}
 int shm_info_get_n_split_tot(shm_info_t *inf){return inf->n_split_tot;}
 int shm_info_get_n_split_last_sec(shm_info_t *inf){return inf->n_split_last_sec;}
+int shm_info_get_energy_cons_tot(shm_info_t *inf){return inf->energy_cons_tot;}
+int shm_info_get_energy_cons_last_sec(shm_info_t *inf){return inf->energy_cons_last_sec;}
