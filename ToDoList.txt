@@ -1,23 +1,155 @@
-master: La simulazione dovr`a partire solamente quando tutti i processi sopra citati sono stati
-creati e hanno eseguito le rispettive istruzioni di inizializzazione,
-quindi sincronizzare in qualche modo, magari con un semaforo
 
-
-
-stampe ogni secondo:
-FATTO numero di attivazioni occorse ad opera del processo attivatore (totali e relative all’ultimo secondo)=
-ogni messaggio ricevuto da un atomo deve aumentare il contatore, master deve stampare il contatore
-
-FATTO numero di scissioni (totali e relative all’ultimo secondo);=
-ogni scissione bisogna aumentare di 1 il contatore da atom, master deve stampare il contatore
-
-FATTO quantit`a di energia prodotta (totale e relativa all’ultimo secondo);
-gli atomi quando si scindono gia screano e aggiornano energia, il master deve stampare
-
-quantit`a di energia consumata (totale e relativa all’ultimo secondo);
-il master gia  consuma energia, deve solo stampare
-
-quantit`a di scorie prodotte (totale e relativa all’ultimo secondo);
-forse atom gia aggiorna le scorie, master deve solo stampare
 
 errore del makefile quando uso make killall kill
+
+
+processo inibitore 
+lo si puo attivare a inizio simulazione, il master ti chiede se vuoi utilizzarlo con scanf
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Prototipi delle funzioni
+void start_inhibitor();
+void run_simulation();
+
+int main() {
+    char response[4];
+
+    printf("Vuoi usare l'inibitore? (s/n): ");
+    if (fgets(response, sizeof(response), stdin) != NULL) {
+        // Rimuovi il carattere di nuova linea (newline) alla fine dell'input
+        response[strcspn(response, "\n")] = 0;
+
+        if (strcmp(response, "s") == 0 || strcmp(response, "S") == 0) {
+            start_inhibitor();
+        } else if (strcmp(response, "n") == 0 || strcmp(response, "N") == 0) {
+            printf("Inibitore non avviato.\n");
+        } else {
+            printf("Risposta non valida. Inibitore non avviato.\n");
+        }
+    }
+
+    // Esegui la simulazione
+    run_simulation();
+
+    return 0;
+}
+
+void start_inhibitor() {
+    // Codice per avviare il processo inibitore
+    printf("Avvio del processo inibitore...\n");
+    // Aggiungi qui il codice per avviare il processo inibitore
+}
+
+void run_simulation() {
+    // Codice per eseguire la simulazione
+    printf("Esecuzione della simulazione...\n");
+    // Aggiungi qui il codice della simulazione
+}
+
+Spiegazione del codice
+
+    Input dell'utente: Il programma chiede all'utente se vuole usare l'inibitore utilizzando printf per visualizzare il messaggio e fgets per leggere la risposta. La risposta viene letta in un buffer di dimensioni fisse (in questo caso, 4 byte per consentire l'inserimento di 's' o 'n' più il carattere di newline e il terminatore nullo).
+
+    Rimozione del newline: strcspn viene usato per trovare la posizione del carattere di newline e sostituirlo con il terminatore nullo per pulire l'input dell'utente.
+
+    Verifica della risposta: La risposta viene confrontata con "s" o "S" (per sì) e "n" o "N" (per no). Se la risposta è sì, viene avviato il processo inibitore; se è no o una risposta non valida, il programma continua senza avviare l'inibitore.
+
+    Avvio del processo inibitore: Se l'utente sceglie di avviare l'inibitore, la funzione start_inhibitor viene chiamata per eseguire il codice necessario per avviare il processo inibitore.
+
+    Esecuzione della simulazione: Dopo aver gestito l'inibitore, la funzione run_simulation viene chiamata per eseguire il resto della simulazione.
+
+Considerazioni aggiuntive
+
+    Controlli di validità: Potresti aggiungere ulteriori controlli per garantire che l'input dell'utente sia valido e gestire eventuali errori.
+
+    Modularità: Mantenere separati il codice dell'inibitore e della simulazione rende il programma più modulare e facile da mantenere.
+
+    Estendibilità: Questa struttura rende facile aggiungere ulteriori opzioni configurabili dall'utente in futuro.
+
+
+    PER FARLO BLOCCARE O RIPARTIRE SI USANO SEGNALI DA LINE ADI COMANDO
+
+    #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <string.h>
+
+volatile sig_atomic_t running = 1;
+
+void signal_handler(int sig) {
+    if (sig == SIGUSR1) {
+        running = 0; // Stop the inhibitor
+    } else if (sig == SIGUSR2) {
+        running = 1; // Start the inhibitor
+    }
+}
+
+int main() {
+    // Set up signal handlers
+    signal(SIGUSR1, signal_handler);
+    signal(SIGUSR2, signal_handler);
+
+    printf("Inhibitor process started with PID: %d\n", getpid());
+
+    while (1) {
+        if (running) {
+            printf("Inhibitor running...\n");
+        } else {
+            printf("Inhibitor stopped...\n");
+        }
+        sleep(1); // Simulate work
+    }
+
+    return 0;
+}
+
+
+2. Gestire i Segnali da Terminale
+
+Puoi inviare segnali a un processo specifico utilizzando il comando kill da terminale. Ad esempio:
+
+    Per fermare il processo inibitore:
+
+    sh
+
+kill -SIGUSR1 <PID>
+
+Per far ripartire il processo inibitore:
+
+sh
+
+    kill -SIGUSR2 <PID>
+
+3. Avviare il Processo Inibitore
+
+Compila e avvia il processo inibitore:
+
+sh
+
+gcc -o inhibitor inhibitor.c
+./inhibitor
+
+4. Inviare i Segnali dal Terminale
+
+Trova il PID del processo inibitore (verrà stampato dal processo stesso quando viene avviato). Quindi, utilizza kill per inviare i segnali appropriati:
+
+sh
+
+# Fermare il processo inibitore
+kill -SIGUSR1 <PID>
+
+# Far ripartire il processo inibitore
+kill -SIGUSR2 <PID>
+
+Vantaggi dei Segnali
+
+    Semplicità: I segnali sono facili da utilizzare e non richiedono la configurazione di risorse aggiuntive come file o socket.
+    Efficienza: L'uso dei segnali è molto efficiente e non introduce ritardi significativi nella comunicazione.
+    Portabilità: I segnali sono una funzionalità standard di Unix/Linux e funzionano su tutte le distribuzioni.
+
+Conclusione
+
+L'uso dei segnali è una soluzione standard e efficace per controllare il comportamento di un processo da terminale. È particolarmente utile per azioni di controllo come fermare o far ripartire un processo senza modificare il codice sorgente principale o utilizzare meccanismi di comunicazione più complessi.

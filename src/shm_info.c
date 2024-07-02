@@ -26,6 +26,7 @@ void param_init(char * file_path, shm_info_t *inf){
 	if ((param_file = fopen(file_path, "r")) == NULL) {
 		fprintf(stderr, " Errore in apertura param_file.\n");
 	}
+	printf("caricando parametri di configurazione.\n");
 	while(fgets(buffer, sizeof(buffer), param_file) != NULL){
 
 		const char delim[] = " : ";
@@ -34,48 +35,48 @@ void param_init(char * file_path, shm_info_t *inf){
 		if (strcmp(token, "ENERGY_DEMAND") == 0) {
 			token = strtok(NULL, delim);
     		shm_info_set_energy_demand(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato enrgy demand %d.\n", shm_info_get_energy_demand(inf));
+			//printf("appena salvato enrgy demand %d.\n", shm_info_get_energy_demand(inf));
 		}
 		else if (strcmp(token, "N_ATOMS_INIT") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_n_atoms_init(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato n atoms init %d.\n", shm_info_get_n_atoms_init(inf));
+			//printf("appena salvato n atoms init %d.\n", shm_info_get_n_atoms_init(inf));
 		}
 		else if (strcmp(token, "N_ATOM_MAX") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_n_atom_max(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato n atom max %d .\n", shm_info_get_n_atom_max(inf));
+			//printf("appena salvato n atom max %d .\n", shm_info_get_n_atom_max(inf));
 		}
 		else if (strcmp(token, "STEP_ALIMENTAZIONE") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_step(inf, strtol(token, NULL, 10));
-			printf("appena salvato  step %ld.\n", shm_info_get_step(inf));
+			//printf("appena salvato  step %ld.\n", shm_info_get_step(inf));
 		}
 		else if (strcmp(token, "MIN_N_ATOMICO") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_min_n_atoms(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato min n atomico %d.\n", shm_info_get_min_n_atoms(inf));
+			//printf("appena salvato min n atomico %d.\n", shm_info_get_min_n_atoms(inf));
 		}
 		else if (strcmp(token, "N_NEW_ATOMS") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_n_new_atoms(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato n new atoms %d.\n", shm_info_get_n_new_atoms(inf));
+			//printf("appena salvato n new atoms %d.\n", shm_info_get_n_new_atoms(inf));
 		}
 		else if (strcmp(token, "SIM_DURATION") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_sim_duration(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato sim duration %d.\n", shm_info_get_sim_duration(inf));
+			//printf("appena salvato sim duration %d.\n", shm_info_get_sim_duration(inf));
 		}
 		else if (strcmp(token, "ENERGY_EXPLODE_THRESHOLD") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_energy_explode_trashold(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato energy explode threshold %d.\n", shm_info_get_energy_explode_trashold(inf));
+			//printf("appena salvato energy explode threshold %d.\n", shm_info_get_energy_explode_trashold(inf));
 	
 		}	
 		else if (strcmp(token, "STEP_ATTIVATORE") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_step_attivatore(inf, (int)strtol(token, NULL, 10));
-			printf("appena salvato step attivatore %d.\n", shm_info_get_step_attivatore(inf));
+			//printf("appena salvato step attivatore %d.\n", shm_info_get_step_attivatore(inf));
 		}
 	}
 }

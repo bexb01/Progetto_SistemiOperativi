@@ -18,12 +18,12 @@ int shm_create(key_t key, size_t size){ //crea segmento mem cond con shmget e ri
 }
 
 void shm_delete(int id_shm){ //cancella il segmento mem condivisa grazie al flag IPC_RMID
-	printf("mem condivisa da cancellara id %d\n", id_shm);
+	//printf("mem condivisa da cancellara id %d\n", id_shm);
 	if (shmctl(id_shm, IPC_RMID, NULL) == -1) {
 		dprintf(2, "shm.c - shm_delete() : Failed to delete SHM segment.\n");
 		perror("shmctl");
 	}else{
-		printf("memoria condivisa cancellata\n");
+		//printf("memoria condivisa cancellata\n");
 	}
 }
 

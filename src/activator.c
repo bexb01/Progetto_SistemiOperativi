@@ -36,10 +36,10 @@ int main(int argc, char *argv[]){
     int atomic_n_to_split;
 	
 	shm_info_attach(&stats.info);//dobbiamo crearla in master, questo serve solo per fare attach, nel master fa create+ attach
-	printf("shm attaccata activator.\n");
+	//printf("shm attaccata activator.\n");
 	int n_seconds=shm_info_get_step_attivatore(stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
-	printf("semaphore processi activator: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+	//printf("semaphore processi activator: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
 
 	}
@@ -80,7 +80,7 @@ int sleep_n_sec(int n_seconds){//solo per rallentare il processo e vedere se fun
     sleep(n_seconds);
 
     // Termina il processo
-    printf("activator si è svegliato.\n");
+    //printf("activator si è svegliato.\n");
 }
 
 void close_and_exit(){
@@ -88,6 +88,6 @@ void close_and_exit(){
 	//msg_queue_remove(stats.info);
 	shm_info_detach(stats.info);
 
-	printf("terminazione del processo ACTIVATOR.\n");
+	//printf("terminazione del processo ACTIVATOR.\n");
 	exit(0);
 }

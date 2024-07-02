@@ -58,7 +58,7 @@ void sem_delete(id_t sem_id)
 	if (semctl(sem_id, 0, IPC_RMID) < 0) { //cancella la lista di semafori specificando l'id
 		dprintf(2, "semaphore.c - sem_delete: Failed to delete semaphore set.\n");
 	}
-	printf("list semafori cancellata.\n");
+	//printf("list semafori cancellata.\n");
 }
 
 static struct sembuf create_sembuf(int index, int semop_value, int flags)//popola la struct sembuf utilizzata da sem_ececute_semop

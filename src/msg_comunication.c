@@ -16,7 +16,7 @@ int msg_comunication_atom_activator_init(void){
 	if ((id = msgget(MSG_ACTIV_ATOM, 0660 | IPC_CREAT | IPC_EXCL)) < 0){//    MSG_ACTIV_ATOM: È la chiave univoca che identifica la coda dei messaggi. Può essere un valore specifico o generato in base a qualche regola nel tuo programma. In questo caso, sembra essere un identificatore specifico, presumibilmente definito altrove nel tuo codice. 0660: Sono i permessi della coda dei messaggi. In questo caso, stai dando al proprietario e al gruppo la possibilità di leggere e scrivere sulla coda dei messaggi, mentre gli altri possono solo leggere. I permessi sono espressi in notazione ottale. IPC_CREAT: Indica che la coda dei messaggi deve essere creata se non esiste già. Se la coda dei messaggi esiste già con la stessa chiave, questa opzione viene ignorata. IPC_EXCL: Garantisce che la creazione della coda dei messaggi fallirà se la coda esiste già con la stessa chiave. Questa opzione è spesso utilizzata insieme a IPC_CREAT per evitare conflitti con code già esistenti.
 		dprintf(2, "msg_comunication.c - msg_comunication_atom_activator_init: Failed to create message queue.\n");
 	}else{
-		printf("coda di messaggi creata con id %d\n", id);
+		//printf("coda di messaggi creata con id %d\n", id);
 	}
 	return id;
 }
@@ -26,7 +26,7 @@ void msg_queue_remove(shm_info_t *inf){
 	if (msgctl(msgq_id, IPC_RMID, NULL)<0){
 		dprintf(2, "msg_comunication.c - msg_comunication_remove: Failed to remove message queue.\n");
 	}else{
-		printf("coda di messaggi eliminata \n");
+		//printf("coda di messaggi eliminata \n");
 	}
 }
 

@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 	long step_nsec;
 	shm_info_attach(&stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
-	printf("semaphore processi alimentation: %d \n", sem_getval(shm_sem_get_startid(stats.info), 0));
+	//printf("semaphore processi alimentation: %d \n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != (long)1){
 
 	}
@@ -106,6 +106,6 @@ void close_and_exit(){
 	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
 	//msg_queue_remove(stats.info); //la creazione e la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
 	shm_info_detach(stats.info);
- 	printf("terminazione del processo alimentation.\n");
+ 	//printf("terminazione del processo alimentation.\n");
 	exit(0);
 }

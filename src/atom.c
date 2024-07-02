@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
 	}
 	//printf("atomo %d ha effettuato attach alla mem condivisa \n", getpid());
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
-	printf("semaphore processi atom: %d\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 0));
+	//printf("semaphore processi atom: %d\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
 		sleep(1);
 	}
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
 	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
 	init_random();
     atomic_number=random_atomic_n(max_atomic_n,min_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
-	printf("numero atomico = %d \n", atomic_number);
+	//printf("numero atomico = %d \n", atomic_number);
 	int i=0;
 		sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 		//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]){
 				//se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
 				//printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
 					//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
-				printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 2));
+				//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 2));
 				update_waste(1);
 				close_and_exit();
 			}
@@ -117,7 +117,7 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 		} 
 		//deve ricevere da padre il suo n atomico e aggiornare il num atom
 		if (close(p_c_pipe[1]) == -1) {// Chiudo il lato di scrittura della pipe
-			 perror("close write pipe child err\n");
+			 perror("write pipe child err. current atom will be closed \n");
 			 exit(EXIT_FAILURE);
     	}
 		read(p_c_pipe[0], &atomic_n, sizeof(int));
@@ -135,7 +135,7 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
         //printf("figlio ha ricevuto natomico dal padre atomic_n = %d.\n", atomic_n);
 
 		if (close(p_c_pipe[0]) == -1) {  // Chiudo il lato di lettura della pipe
-       		perror("close read pipe child err\n");
+       		perror("read pipe child err. current atom will be closed\n");
     		exit(EXIT_FAILURE);
     	}
 		return atomic_n;
@@ -144,7 +144,7 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
         struct  atom_n_parent_child split_atom_n = atomic_n_to_split(atomic_n);
 		atomic_n = split_atom_n.atom_n_parent;
 		if (close(p_c_pipe[0]) == -1) {  // Chiudo il lato di lettura della pipe
-        	perror("close read pipe parent err\n");
+        	perror("read pipe parent err. current atom will be closed\n");
             exit(EXIT_FAILURE);
     	}
 		write(p_c_pipe[1], &split_atom_n.atom_n_child, sizeof(int));
@@ -152,7 +152,7 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
         //printf("padre ha inviato natomico al figlio &split_atom_n.atom_n_child= %d .\n", split_atom_n.atom_n_child);
 
 		if (close(p_c_pipe[1]) == -1) {// Chiudo il lato di scrittura della pipe
-       		perror("close write pipe parent err\n");
+       		perror("write pipe parent err. current atom will be closed\n");
         	exit(EXIT_FAILURE);
     	}
 			//calcolo energia+aggiornamento  fa solo il padre

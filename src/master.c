@@ -67,15 +67,17 @@ int main(int argc, char *argv[]){
 	init_activator();
 	printf("Attesa che tutti i processi figli vengano creati...\n");
 	if(shm_sem_ready(stats.info)!= 0){// fino a quando semaforo non è ready aspettiamo
-		printf("attendo creazione figli\n");
+		//printf("attendo creazione figli\n");
 		
 	}
 		//se siamo qui il semaforo è in stato ready	
 	int n_sec = shm_info_get_sim_duration(stats.info); //durata simulazione
-	printf("semaphore processi totali: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+	printf("processi totali: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	//printf("figli creati con successo\n");
+
+
 	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0); //allora semaforo simulazione a 1
-	printf("semaphore start : %d\n simulazione avviata\n", sem_getval(shm_sem_get_startid(stats.info), 1));
+	printf("simulazione avviata\n");
 
 	
 	//close_and_exit();
@@ -91,7 +93,7 @@ int main(int argc, char *argv[]){
 	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0) {
 
 		if(shm_info_get_sim_duration(stats.info)<=0){
-			printf("TIME OUT TIME OUT TIMEOUT TIME OUT TIMEOUT: 0");
+			printf("TIME OUT TIME OUT TIMEOUT TIME OUT TIMEOUT\n");
 			periodic_print();
 			sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 			close_and_exit();
@@ -297,7 +299,7 @@ void set_signal_handler(void){
 int shm_sem_ready(){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
 	int num_process = shm_info_get_n_atoms_init(stats.info)+2;
 	while (sem_getval(shm_sem_get_startid(stats.info), 0) < num_process) {
-		printf("semaphore processi atom stampati da shm ogni secondo: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+		//printf("semaphore processi atom stampati da shm ogni secondo: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 		sleep(1);
     }
 	return 0;
