@@ -122,7 +122,7 @@ void shm_sem_init(shm_info_t *inf){// cera i semafori
 	sem_setval(inf->sem_start_id, 3, 1);    // energy_prod_tot sem 
 	sem_setval(inf->sem_start_id, 4, 1);    // energy_prod_ e last sec sem
 	sem_setval(inf->sem_start_id, 5, 1);    // waste_tot
-	sem_setval(inf->sem_start_id, 6, 1);    // waste_last_sec
+	sem_setval(inf->sem_start_id, 6, 0);    // inhibitor
 
 	sem_setval(inf->sem_start_id, 7, 1);    // end simulation sem
 

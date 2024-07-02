@@ -33,6 +33,10 @@ void init_activator(void);
 
 void init_alimentation(void);
 
+void init_inhibitor(void);
+
+void terminal_inhibitor(void);
+
 pid_t run_process(char *name, int index);
 
 void exit_n_sec(int n_seconds);
@@ -62,6 +66,7 @@ int main(int argc, char *argv[]){
 	param_init("../config_param.txt", stats.info);
 	msg_q_a_a_init(stats.info);	//gli passiamo il valore del puntatore *info che è l'indirizzo della structct shm_info_t che è dove salviamo l'id con la funzione				
 	shm_sem_init(stats.info);
+	terminal_inhibitor();
 	init_atoms();
 	init_alimentation();
 	init_activator();
@@ -137,10 +142,28 @@ void init_alimentation(void){
 	pid=run_process("./alimentation", 1); //dice a run process di runnare proc alimentatore
 }
 
+//crea proc inibitore
+void init_inhibitor(void){
+	pid_t pid;
+	pid=run_process("./inhibitor", 1); //  ./ prima del programma indica che si trova nella directory corrente quindi master e il codice dei processi attivati da master stanno nella stessa cartella
+}
 
-//stampe periodiche delle statistiche
-void print_statistics(void){
-// da implementare dopo aver implementato la memoria condivisa per la condivisione delle statistiche tra i processi
+
+void terminal_inhibitor(void){
+	char response[4];
+
+    printf("inizializzare esecuzione con Inibitore? (s/n): ");
+    if (fgets(response, sizeof(response), stdin) != NULL) {
+        response[strcspn(response, "\n")] = 0; // Rimuovi il carattere di nuova linea (newline) alla fine dell'input
+        if (strcmp(response, "s") == 0 || strcmp(response, "S") == 0) {
+            init_inhibitor();
+			printf("Inibitore avviato.\n");
+        } else if (strcmp(response, "n") == 0 || strcmp(response, "N") == 0) {
+            printf("Inibitore non avviato.\n");
+        } else {
+            printf("Risposta non valida. Inibitore non avviato.\n");
+        }
+	}
 }
 
 //runna il processo specificato da name

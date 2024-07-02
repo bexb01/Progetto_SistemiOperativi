@@ -80,7 +80,17 @@ int main(int argc, char *argv[]){
 				sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
 
 			if(atomic_number > min_atomic_n){
-				atomic_number=split(atomic_number); //gli passiamo n atomico padre
+				if(probabilità_adattiva()){
+					if(random_waste_or_block()){
+					//split con waste o non split
+					atomic_number=split(atomic_number); //gli passiamo n atomico padre
+					}else{
+
+					}
+				}else{
+					//split senza waste
+					atomic_number=split(atomic_number); //gli passiamo n atomico padre
+				}
     			//printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
 			}else{
 				//se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 

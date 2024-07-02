@@ -4,69 +4,6 @@ errore del makefile quando uso make killall kill
 
 
 processo inibitore 
-lo si puo attivare a inizio simulazione, il master ti chiede se vuoi utilizzarlo con scanf
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-// Prototipi delle funzioni
-void start_inhibitor();
-void run_simulation();
-
-int main() {
-    char response[4];
-
-    printf("Vuoi usare l'inibitore? (s/n): ");
-    if (fgets(response, sizeof(response), stdin) != NULL) {
-        // Rimuovi il carattere di nuova linea (newline) alla fine dell'input
-        response[strcspn(response, "\n")] = 0;
-
-        if (strcmp(response, "s") == 0 || strcmp(response, "S") == 0) {
-            start_inhibitor();
-        } else if (strcmp(response, "n") == 0 || strcmp(response, "N") == 0) {
-            printf("Inibitore non avviato.\n");
-        } else {
-            printf("Risposta non valida. Inibitore non avviato.\n");
-        }
-    }
-
-    // Esegui la simulazione
-    run_simulation();
-
-    return 0;
-}
-
-void start_inhibitor() {
-    // Codice per avviare il processo inibitore
-    printf("Avvio del processo inibitore...\n");
-    // Aggiungi qui il codice per avviare il processo inibitore
-}
-
-void run_simulation() {
-    // Codice per eseguire la simulazione
-    printf("Esecuzione della simulazione...\n");
-    // Aggiungi qui il codice della simulazione
-}
-
-Spiegazione del codice
-
-    Input dell'utente: Il programma chiede all'utente se vuole usare l'inibitore utilizzando printf per visualizzare il messaggio e fgets per leggere la risposta. La risposta viene letta in un buffer di dimensioni fisse (in questo caso, 4 byte per consentire l'inserimento di 's' o 'n' più il carattere di newline e il terminatore nullo).
-
-    Rimozione del newline: strcspn viene usato per trovare la posizione del carattere di newline e sostituirlo con il terminatore nullo per pulire l'input dell'utente.
-
-    Verifica della risposta: La risposta viene confrontata con "s" o "S" (per sì) e "n" o "N" (per no). Se la risposta è sì, viene avviato il processo inibitore; se è no o una risposta non valida, il programma continua senza avviare l'inibitore.
-
-    Avvio del processo inibitore: Se l'utente sceglie di avviare l'inibitore, la funzione start_inhibitor viene chiamata per eseguire il codice necessario per avviare il processo inibitore.
-
-    Esecuzione della simulazione: Dopo aver gestito l'inibitore, la funzione run_simulation viene chiamata per eseguire il resto della simulazione.
-
-Considerazioni aggiuntive
-
-    Controlli di validità: Potresti aggiungere ulteriori controlli per garantire che l'input dell'utente sia valido e gestire eventuali errori.
-
-    Modularità: Mantenere separati il codice dell'inibitore e della simulazione rende il programma più modulare e facile da mantenere.
-
-    Estendibilità: Questa struttura rende facile aggiungere ulteriori opzioni configurabili dall'utente in futuro.
 
 
     PER FARLO BLOCCARE O RIPARTIRE SI USANO SEGNALI DA LINE ADI COMANDO
@@ -153,3 +90,164 @@ Vantaggi dei Segnali
 Conclusione
 
 L'uso dei segnali è una soluzione standard e efficace per controllare il comportamento di un processo da terminale. È particolarmente utile per azioni di controllo come fermare o far ripartire un processo senza modificare il codice sorgente principale o utilizzare meccanismi di comunicazione più complessi.
+
+
+
+
+
+
+assorbe parte della quantit`a di energia prodotta dalla scissione dell’atomo diminuendo la quantit`a di energia
+che viene liberata (QUESTO AGISCE DIRETTAMENTE NELL'ATOMO, QUESTO CONTROLLA MEM CONDIVIDSA CHE L'INIBITOE SIA ATTIVATO E MODIFICA LA FUNZIONE DI ENERGIA LIBERATA
+IMPLICA UN SEMAFORO O UNA VARIABILE IN MEMORIA CONDIVISA)
+
+
+• limita il numero di scissioni agendo sull’operazione di scissione rendendola probabilistica (ad esempio decidendo
+se la scissione debba avvenire o meno oppure trasformando in scoria uno degli atomi prodotti dopo la scissione)(STESSA COSA, L'ATOMO CONTROLLA CHE L'INIBITORE SIA ATTIVO CON UN SEMAFORO E 
+USA UNA FUNZIONE RANDOMICA DI 3 NUMERI PER SCISSIONE, NON SCISSIONE O SCISSIONE E UNO DEI DUE ATOMI PRODOTTI DIVENTA SCORIA)
+4
+Il meccanismo di assorbimento e quello di limitazione delle scissioni sono scelti dal programmatore e devono
+essere basati su qualche criterio adattivo.
+
+
+FATTO La presenza o meno del processo inibitore deve poter essere scelta a run-time, all’inizio della simulazione.
+
+ Nel caso in cui il processo inibitore sia attivo, ci si aspetta che la terminazione per “explode” e “meltdown” non avvenga.
+Inoltre, l’utente deve poter fermare (e far ripartire) il processo inibitore pi`u volte da terminale attraverso un
+meccanismo a scelta del programmatore
+
+Codice Aggiornato
+
+c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_ATOMS 5000
+
+// Funzione per calcolare la probabilità adattiva
+double adaptive_probability(int active_atoms) {
+    if (active_atoms >= MAX_ATOMS) {
+        return 1.0; // Blocco totale se abbiamo raggiunto il limite
+    }
+    return (double)active_atoms / MAX_ATOMS; // Probabilità adattiva
+}
+
+// Funzione per decidere se bloccare la scissione o trasformare in scoria
+int should_block_or_waste_fission(int active_atoms) {
+    double probability = adaptive_probability(active_atoms);
+    double random_value = (double)rand() / RAND_MAX; // Numero casuale tra 0 e 1
+    if (random_value < probability) {
+        return rand() % 2; // Restituisce 0 o 1 casualmente per blocco o scoria
+    }
+    return -1; // Indica che la scissione può avvenire
+}
+
+// Simula la scissione di un atomo
+void fission(int *active_atoms) {
+    int decision = should_block_or_waste_fission(*active_atoms);
+    if (decision == 0) {
+        printf("Fission converted to waste.\n");
+        return;
+    } else if (decision == 1) {
+        printf("Fission blocked.\n");
+        return;
+    }
+
+    // Altrimenti, la scissione avviene normalmente
+    printf("Fission occurs. Active atoms increased.\n");
+    *active_atoms += 1; // Aumentiamo il conteggio degli atomi attivi
+}
+
+int main() {
+    srand(time(NULL)); // Inizializza il generatore di numeri casuali
+
+    int active_atoms = 0;
+    
+    // Simuliamo una serie di scissioni
+    for (int i = 0; i < 100; i++) {
+        fission(&active_atoms);
+        printf("Active atoms: %d\n", active_atoms);
+        if (active_atoms >= MAX_ATOMS) {
+            printf("Reached maximum number of active atoms.\n");
+            break;
+        }
+    }
+
+    return 0;
+}
+
+Spiegazione del Codice
+
+    adaptive_probability: Questa funzione calcola la probabilità di bloccare la scissione in base al numero di atomi attivi. La probabilità aumenta linearmente man mano che il numero di atomi attivi si avvicina al massimo consentito.
+
+    should_block_or_waste_fission: Questa funzione utilizza la probabilità adattiva per decidere se bloccare la scissione o trasformarla in scoria. Se il valore casuale è inferiore alla probabilità adattiva, la funzione restituisce casualmente 0 o 1 (blocco o scoria). Altrimenti, restituisce -1 per indicare che la scissione può avvenire.
+
+    fission: Questa funzione verifica la decisione restituita da should_block_or_waste_fission. Se la decisione è 0, la scissione viene trasformata in scoria. Se la decisione è 1, la scissione viene bloccata. Se la decisione è -1, la scissione avviene normalmente e il numero di atomi attivi aumenta.
+
+    main: Questa funzione simula una serie di scissioni per dimostrare il funzionamento della logica di blocco adattiva e della trasformazione in scoria. Si interrompe quando il numero massimo di atomi attivi è raggiunto.
+
+Considerazioni Finali
+
+Con questo approccio, la probabilità di bloccare la scissione o trasformarla in scoria aumenta gradualmente man mano che ci avviciniamo al limite massimo di atomi attivi, rendendo il sistema sempre più restrittivo. Questo garantisce che il numero di atomi attivi rimanga sotto controllo e non superi il limite massimo.
+c'è un comando per vedere qual'è il limite di processi creabili dal utente su linux? in modo tale che il numero massimo di atomi creabili combaci col num max di processi creabili?
+ChatGPT
+
+Sì, puoi utilizzare il comando ulimit su Linux per vedere il limite massimo di processi che un utente può creare. Specificamente, il comando ulimit -u ti mostrerà il numero massimo di processi che l'utente corrente può avere contemporaneamente.
+
+Ecco come puoi fare:
+
+sh
+
+ulimit -u
+
+Questo comando restituirà un numero che rappresenta il massimo numero di processi che l'utente corrente può creare.
+
+Se vuoi vedere o impostare i limiti per tutti gli utenti, puoi controllare il file /etc/security/limits.conf. Ecco come puoi vedere il contenuto del file:
+
+sh
+
+cat /etc/security/limits.conf
+
+Modifica del limite di processi
+
+Se hai bisogno di aumentare il limite massimo di processi, puoi farlo aggiungendo o modificando le linee in /etc/security/limits.conf:
+
+plaintext
+
+# Example entry to set a limit for a specific user
+username     hard    nproc       10000
+
+# Example entry to set a limit for all users
+*            hard    nproc       10000
+
+Dopo aver apportato modifiche a questo file, potrebbe essere necessario riavviare il sistema o almeno la sessione dell'utente per applicare le nuove impostazioni.
+Uso nel Programma
+
+Puoi ottenere questo valore nel tuo programma in C e utilizzarlo per impostare il numero massimo di atomi attivi. Ecco un esempio di come puoi fare questo:
+
+c
+
+#include <stdio.h>
+#include <sys/resource.h>
+#include <unistd.h>
+
+int get_max_processes() {
+    struct rlimit limit;
+    if (getrlimit(RLIMIT_NPROC, &limit) == 0) {
+        return (int)limit.rlim_cur;
+    } else {
+        perror("getrlimit");
+        return -1;
+    }
+}
+
+int main() {
+    int max_processes = get_max_processes();
+    if (max_processes != -1) {
+        printf("Maximum number of processes: %d\n", max_processes);
+    }
+    return 0;
+}
+
+Questo programma recupera il limite massimo di processi per l'utente corrente e lo stampa. Puoi utilizzare questo valore per impostare il numero massimo di atomi attivi nel tuo programma.
