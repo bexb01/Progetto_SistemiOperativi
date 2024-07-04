@@ -28,13 +28,13 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 struct stats stats;
 
 int main(int argc, char *argv[]){
-    printf("CIAO SONO L'INIBITOREEEEEEEEEEEEEEEEEEEEEE");
+    printf("CIAO SONO L'INIBITOREEEEEEEEEEEEEEEEEEEEEE\n");
 
 	if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
 	}
 
-	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
+	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
 		sleep(1);
 	}
 

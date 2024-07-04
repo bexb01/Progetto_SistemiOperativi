@@ -1,4 +1,10 @@
+semaphore.c - sem_getval: Failed to get semaphore value
+gestire l'uscita dal processo nel caso non si trova la mem condivisa/ semaforo
 
+
+aggiungere un semaforo che avvisa che ci sono delle fork in corso cosi che master deve aspettare che tutte le 
+fork teminino poi puo chiudersi e nel frattempo pero non possono essere vviate nuove fork
+quindi di sicuro master o chi di sovere setta il valore di semaforo di esecuzione a 0 e poi si aspettano le foork
 
 errore del makefile quando uso make killall kill
 
@@ -251,3 +257,150 @@ int main() {
 }
 
 Questo programma recupera il limite massimo di processi per l'utente corrente e lo stampa. Puoi utilizzare questo valore per impostare il numero massimo di atomi attivi nel tuo programma.
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>  // Include PATH_MAX
+#include <string.h>  // Include memset
+
+void get_process_limit_path(char *path_buffer, size_t buffer_size, pid_t pid) {
+    snprintf(path_buffer, buffer_size, "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/snap.code.code-d6670ae6-8f30-47c3-bc0b-544b579abf07.scope/pids.peak", pid);
+}
+
+int main() {
+    char path[PATH_MAX];
+    pid_t pid = getpid();  // Use the current process ID, change this as needed
+
+    get_process_limit_path(path, sizeof(path), pid);
+    
+    FILE *file = fopen(path, "r");
+
+    if (file == NULL) {
+        perror("Failed to open file");
+        return EXIT_FAILURE;
+    }
+
+    char buffer[128];
+    if (fgets(buffer, sizeof(buffer), file) == NULL) {
+        perror("Failed to read file");
+        fclose(file);
+        return EXIT_FAILURE;
+    }
+
+    fclose(file);
+
+    if (buffer[0] == 'm') {
+        printf("No limit on the number of processes\n");
+    } else {
+        int max_processes = atoi(buffer);
+        printf("Maximum number of processes: %d\n", max_processes);
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
+
+Sì, puoi ottenere il valore della memoria libera e salvarlo in una variabile in un programma C. Su Linux, uno dei modi per farlo è leggere il file /proc/meminfo, che contiene informazioni sulla memoria del sistema. Ecco un esempio di come puoi fare questo:
+
+c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+long get_free_memory() {
+    FILE *file = fopen("/proc/meminfo", "r");
+    if (file == NULL) {
+        perror("fopen");
+        return -1;
+    }
+
+    char line[256];
+    long free_memory = -1;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (strncmp(line, "MemFree:", 8) == 0) {
+            sscanf(line + 8, "%ld", &free_memory);
+            free_memory *= 1024; // Convert kB to bytes
+            break;
+        }
+    }
+
+    fclose(file);
+    return free_memory;
+}
+
+int main() {
+    long free_memory = get_free_memory();
+    if (free_memory != -1) {
+        printf("Free memory: %ld bytes\n", free_memory);
+    } else {
+        printf("Failed to get free memory.\n");
+    }
+    return 0;
+}
+
+Spiegazione del codice
+
+    Apertura del file /proc/meminfo:
+
+    c
+
+FILE *file = fopen("/proc/meminfo", "r");
+if (file == NULL) {
+    perror("fopen");
+    return -1;
+}
+
+Questo apre il file /proc/meminfo in modalità di lettura. Se l'apertura del file fallisce, stampa un messaggio di errore e ritorna -1.
+
+Lettura del file riga per riga:
+
+c
+
+char line[256];
+long free_memory = -1;
+
+while (fgets(line, sizeof(line), file)) {
+    if (strncmp(line, "MemFree:", 8) == 0) {
+        sscanf(line + 8, "%ld", &free_memory);
+        free_memory *= 1024; // Convert kB to bytes
+        break;
+    }
+}
+
+Questo legge il file riga per riga finché non trova la linea che inizia con "MemFree:". Quando trova questa linea, usa sscanf per estrarre il valore della memoria libera e lo converte da kilobytes a bytes.
+
+Chiusura del file:
+
+c
+
+fclose(file);
+
+Questo chiude il file dopo aver finito di leggerlo.
+
+Uso del valore della memoria libera:
+
+c
+
+    int main() {
+        long free_memory = get_free_memory();
+        if (free_memory != -1) {
+            printf("Free memory: %ld bytes\n", free_memory);
+        } else {
+            printf("Failed to get free memory.\n");
+        }
+        return 0;
+    }
+
+    Questo chiama la funzione get_free_memory e stampa il valore della memoria libera se l'operazione ha avuto successo.
+
+Questo programma ti permette di ottenere il valore della memoria libera e di salvarlo in una variabile in C.

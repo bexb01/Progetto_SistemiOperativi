@@ -28,7 +28,7 @@ int send_split_msg(int cargo_type);
 
 void close_and_exit();
 
-int sleep_n_sec(int n_seconds);
+void nsleep(long step_nsec);
 
 struct stats stats;
 
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
 	
 	shm_info_attach(&stats.info);//dobbiamo crearla in master, questo serve solo per fare attach, nel master fa create+ attach
 	//printf("shm attaccata activator.\n");
-	int n_seconds=shm_info_get_step_attivatore(stats.info);
+	long step_nsec=shm_info_get_step_attivatore(stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	//printf("semaphore processi activator: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
@@ -49,10 +49,7 @@ int main(int argc, char *argv[]){
 		if(sem_getval(shm_sem_get_startid(stats.info), 2)>0 ){
 			atomic_n_to_split=1;//adesso non c'è piu bisogno di specificare il numero atomico= tipo di messaggio
 			send_split_msg(atomic_n_to_split);
-			send_split_msg(atomic_n_to_split);
-			send_split_msg(atomic_n_to_split);
-			send_split_msg(atomic_n_to_split);
-			sleep_n_sec(n_seconds);
+			nsleep(step_nsec);
 		//printf("inviato messaggio split 55.\n");
 		}
 	}
@@ -73,14 +70,16 @@ int send_split_msg(int atomic_n_rec){
 	return 0;
 }
 
-int sleep_n_sec(int n_seconds){//solo per rallentare il processo e vedere se funziona tutto 
-    //printf("Il processo activator dormirà %d secondi.\n", n_seconds);
-
-    // Aspetta n_secondi
-    sleep(n_seconds);
-
-    // Termina il processo
-    //printf("activator si è svegliato.\n");
+void nsleep(long step_nsec){
+	struct timespec nsec, rem_nsec;
+	nsec.tv_sec= 0;
+	nsec.tv_nsec= step_nsec;
+	nanosleep(&nsec, NULL); //senza gestione degli errori
+	/*do{ //con gestione erroriò
+		errno = EXIT_SUCCESS;
+		nanosleep(&nsec, &rem_nsec);
+		nsec=rem_nsec;
+	}while (errno== EINTR)*/
 }
 
 void close_and_exit(){

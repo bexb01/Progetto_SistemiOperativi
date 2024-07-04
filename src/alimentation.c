@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <errno.h>
+#include <string.h>
 
 #include "include/shm_info.h"
 #include "../lib/semaphore.h"
@@ -72,7 +73,7 @@ pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasf
 	//int atomic_n =35; //[DA CORREGGERE] 35 num atomico atomi creati da aimentatore 
 	char *args[2], buf[10];   
 	if ((process_pid = fork()) == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
-		dprintf(2, "alimentation.c: Error in fork. MELTDOWN MELTDOWN MELTDOWN\n");//stampa u filedescriptor 2 che stampa su sdterr
+		//dprintf(2, "alimentation.c: Error in fork. MELTDOWN MELTDOWN MELTDOWN\n");//stampa u filedescriptor 2 che stampa su sdterr
 		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in alimentation\n");
 		//blocco esecuzione
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);

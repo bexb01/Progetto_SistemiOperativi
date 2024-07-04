@@ -66,8 +66,8 @@ int main(int argc, char *argv[]){
 	param_init("../config_param.txt", stats.info);
 	msg_q_a_a_init(stats.info);	//gli passiamo il valore del puntatore *info che è l'indirizzo della structct shm_info_t che è dove salviamo l'id con la funzione				
 	shm_sem_init(stats.info);
-	terminal_inhibitor();
 	init_atoms();
+	terminal_inhibitor();
 	init_alimentation();
 	init_activator();
 	printf("Attesa che tutti i processi figli vengano creati...\n");
@@ -173,6 +173,9 @@ pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasf
 	process_pid = fork();
 	if (process_pid == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
 		perror("master.c: Error in fork.\n");//stampa u filedescriptor 2 che stampa su sdterr
+		fprintf(stderr, "Errore nella fork: %s\n", strerror(errno));
+        perror("Errore nella fork");
+        printf("Codice di errore errno: %d\n", errno);
 		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in master\n");
 		//blocco esecuzione
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);

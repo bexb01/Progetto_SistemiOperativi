@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#define MAX_ATOMS 5200
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,7 +31,7 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 					  //shm_info_t 
 };
 
-int split(int atomic_n); //metodo per la scissione atomica
+int split(int atomic_n, int if_waste); //metodo per la scissione atomica
 
 void update_energy(struct  atom_n_parent_child);
 
@@ -43,6 +44,8 @@ void init_random();
 int random_atomic_n(int max, int min);
 void update_waste(int waste);
 int ctrl_sem_getval(int sem_id, int sem_n);
+
+int adaptive_probability(void);
 
 struct stats stats;
 
@@ -67,36 +70,41 @@ int main(int argc, char *argv[]){
 	int i=0;
 		sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 		//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+	int split_prob;
 	
     //printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
 	while (ctrl_sem_getval(shm_sem_get_startid(stats.info), 7)>0){
 		//printf("ancora vivo.\n");
 		if(rcv_msg(atomic_number)){//ricezzione di un messaggio gli dice di fare scissione
-			
 			while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 8)==0){
 			}
 				sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
 				shm_info_set_n_activation_tot(stats.info, 1);//aumento attivazioni in MUTUA ESCLUSIONE
 				sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
-
+			
 			if(atomic_number > min_atomic_n){
-				if(probabilità_adattiva()){
-					if(random_waste_or_block()){
-					//split con waste o non split
-					atomic_number=split(atomic_number); //gli passiamo n atomico padre
-					}else{
-
+				//printf("%d \n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 6));
+				//srand(time(NULL));
+				if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 6)==1){
+					split_prob=adaptive_probability();
+					if(split_prob ==  -1){ //-1 blocco tutto, 1 splittowaste o blocco, 0 splitto
+						//non faccio niente=blocco lo split
+					}else if(split_prob ==  1){
+						split_prob=adaptive_probability();
+						if((split_prob == 1) || (split_prob == -1)){ //probabilità del secondo caso//split con waste o non split
+							//blocchiamo split
+						}else if(split_prob == 0){
+							atomic_number=split(atomic_number, 1); //splittiamo con waste
+						}
+					}else if(split_prob ==  0){ //plit_prob==0
+						//split senza waste
+						atomic_number=split(atomic_number, 0); //gli passiamo n atomico padre
 					}
+					//printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
 				}else{
-					//split senza waste
-					atomic_number=split(atomic_number); //gli passiamo n atomico padre
+					atomic_number=split(atomic_number, 0);
 				}
-    			//printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
 			}else{
-				//se numero atomico troppo piccolo per split allora va nelle scorie e il processa va spento, da implementare 
-				//printf("Terminazione del processo atomo, numero atomico insufficiente.\n");
-					//flag 0 indica che se il semaforo è occupato allora aspetto che si liberi per eseguire l'op, "bloccando il chiamante", ipc_nowait non aspetta e termina con errore eagain
-				//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 2));
 				update_waste(1);
 				close_and_exit();
 			}
@@ -107,7 +115,7 @@ int main(int argc, char *argv[]){
 	close_and_exit();
 }
 
-int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre e figlio come atomic_n/2, magari dovrebbe salvare anche i pid nella mem condivisa? lo faremo se serve
+int split(int atomic_n, int if_waste){//crea atomo figlio + setta il numero atomico del padre e figlio come atomic_n/2, magari dovrebbe salvare anche i pid nella mem condivisa? lo faremo se serve
 	//[da aggiungere mem cond] se il num atomico è abbastanza grande da essere splittato allora forkiamo
 	int p_c_pipe[2];//mi servono per la comunicazione atomo parent-child, forse da mettere dentro split()? anche no
 	if (pipe(p_c_pipe) == -1) {
@@ -122,9 +130,11 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	} else if (process_pid == 0) { // se figlio
+		
 		if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
 		} 
+		
 		//deve ricevere da padre il suo n atomico e aggiornare il num atom
 		if (close(p_c_pipe[1]) == -1) {// Chiudo il lato di scrittura della pipe
 			 perror("write pipe child err. current atom will be closed \n");
@@ -148,6 +158,10 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
        		perror("read pipe child err. current atom will be closed\n");
     		exit(EXIT_FAILURE);
     	}
+		if(if_waste==1){
+			update_waste(1);
+			close_and_exit();
+		}
 		return atomic_n;
 	} else {//padre
 		//invia al figlio il num atomico e aggiorna il proprio+calcolare energia liberata? oppure nel main
@@ -170,6 +184,24 @@ int split(int atomic_n){//crea atomo figlio + setta il numero atomico del padre 
 		return atomic_n;
 	}
 }
+
+// Funzione per calcolare la probabilità adattiva
+int adaptive_probability() {
+	int active_process=ctrl_sem_getval(shm_sem_get_startid(stats.info), 2);
+    if (active_process >= MAX_ATOMS) {
+        return -1; // Blocco totale se abbiamo raggiunto il limite
+    }
+    double probability = (double)active_process / MAX_ATOMS; // Probabilità adattiva
+	double random_value = (((double)rand() / RAND_MAX) * 0.9); // Numero casuale tra 0 e 0.
+	//printf("%lf \n", probability-random_value);
+    if (random_value < probability) {
+        return 1; // indica che o scissione+waste oppure blocca scissione/ nel secondo caso significa che blocca scissione
+    }else{
+    return 0; // Indica che la scissione può avvenire/ nel secondo caso indica che scinde+waste
+	}
+}
+
+
 struct  atom_n_parent_child atomic_n_to_split(int atomic_n){//splitto sempre per 2, se dispari padre difetto e figlio eccesso
 	if((atomic_n % 2)==0){
 	      	struct atom_n_parent_child parent_child;
