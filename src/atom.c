@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #define MAX_ATOMS 5200
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -10,9 +11,12 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <string.h>
 
 
 #include "../lib/semaphore.h"
@@ -40,17 +44,22 @@ struct  atom_n_parent_child atomic_n_to_split(int atomic_n);
 int exit_n_sec(int n_seconds);
 void close_and_exit();
 int rcv_msg(int atomic_n);
-void init_random();
+int get_max_user_processes(void);
+void init_random(void);
+int read_pids_max(void);
+long get_free_memory(void);
+int adaptive_probability(int user_limit, int cgroup_limit);
 int random_atomic_n(int max, int min);
 void update_waste(int waste);
 int ctrl_sem_getval(int sem_id, int sem_n);
-
-int adaptive_probability(void);
+double max3(double a, double b, double c);
 
 struct stats stats;
 
 int main(int argc, char *argv[]){
 	int atomic_number;
+	int user_limit=get_max_user_processes();
+	int cgroup_limit=read_pids_max();
 	//int min_atomic_n = 24
     //printf("atomo creato.\n");
 	if(shm_info_attach(&stats.info)==-1){
@@ -86,11 +95,11 @@ int main(int argc, char *argv[]){
 				//printf("%d \n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 6));
 				//srand(time(NULL));
 				if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 6)==1){
-					split_prob=adaptive_probability();
+					split_prob=adaptive_probability(user_limit, cgroup_limit);
 					if(split_prob ==  -1){ //-1 blocco tutto, 1 splittowaste o blocco, 0 splitto
 						//non faccio niente=blocco lo split
 					}else if(split_prob ==  1){
-						split_prob=adaptive_probability();
+						split_prob=adaptive_probability(user_limit, cgroup_limit);
 						if((split_prob == 1) || (split_prob == -1)){ //probabilità del secondo caso//split con waste o non split
 							//blocchiamo split
 						}else if(split_prob == 0){
@@ -185,20 +194,162 @@ int split(int atomic_n, int if_waste){//crea atomo figlio + setta il numero atom
 	}
 }
 
-// Funzione per calcolare la probabilità adattiva
-int adaptive_probability() {
+int get_max_user_processes(void) { // equivalente al numero di processi con comando ulimit -u
+    struct rlimit limit;
+    if (getrlimit(RLIMIT_NPROC, &limit) == 0) {
+		//printf("%d \n",(int)limit.rlim_cur );
+        return (int)limit.rlim_cur;
+    } else {
+        perror("getrlimit");
+        return -1;
+    }
+}
+
+
+
+void get_cgroup_path(char *path_buffer, size_t buffer_size) {
+    pid_t pid = getpid();
+    // Costruisce il percorso al file cgroup del processo corrente grazie al pid
+    snprintf(path_buffer, buffer_size, "/proc/%d/cgroup", pid);  // scrive nel buffer il path
+    //printf("Variabile 'path_buffer' modificata: %s\n", path_buffer);  // Stampa il percorso del file cgroup
+}
+
+int get_pids_max_path(char *cgroup_path, char *pids_max_path, size_t buffer_size) {
+    // Apre il file cgroup per determinare il percorso del cgroup relativo al controller pids
+    FILE *file = fopen(cgroup_path, "r");  //apre il file in lettura
+    if (file == NULL) { 
+        //perror("Failed to open cgroup file"); 
+        return -1;
+    }
+    char line[256];  // Buffer per leggere ogni linea del file cgroup
+    int found = 0;  // Flag per indicare se abbiamo trovato il controller pids
+    char relative_path[PATH_MAX] = "";  // Buffer per il percorso relativo
+    // Legge ogni riga del file cgroup
+    while (fgets(line, sizeof(line), file)) {  // fgets legge una linea dal file e la memorizza in line, in teoria il file dovrebbe contenere solo una linea
+        //printf("Variabile 'line' letta: %s", line);  // Stampa la linea letta che dovrebbe essre l'unica letta
+        
+        char *start_path = strchr(line, '/');// Cerca la linea contenente "/"
+        if (start_path != NULL) {
+            // Rimuove il carattere di nuova riga alla fine della stringa, se presente
+            start_path[strcspn(start_path, "\n")] = '\0'; // sostituisce con il valore nullo il primo a capo
+            strncpy(relative_path, start_path, sizeof(relative_path) - 1);
+            relative_path[sizeof(relative_path) - 1] = '\0';  // termino la stringa
+            //printf("Variabile 'relative_path' modificata: %s\n", relative_path);  // Stampa il percorso relativo trovato
+            found = 1;  // Imposta il flag su 1, indicando che abbiamo trovato il percorso
+            break;  // Esce dal loop una volta trovato il percorso relativo
+        }
+    }
+
+    fclose(file);  // Chiude il file cgroup
+    //printf("File cgroup chiuso.\n");  // Stampa un messaggio di chiusura del file
+
+    if (!found) {
+        //fprintf(stderr, "No valid path found in cgroup file.\n");
+        return -1;
+    }
+
+    snprintf(pids_max_path, buffer_size, "/sys/fs/cgroup%s/pids.max", relative_path);// Costruisce il percorso al file pids.max
+    //printf("Variabile 'pids_max_path' modificata: %s\n", pids_max_path);  // Stampa il percorso del file pids.max
+    // Rimuove il carattere di nuova riga alla fine della stringa, sostituendolo con il terminatore di stringa '\0'
+    pids_max_path[strcspn(pids_max_path, "\n")] = '\0';  // strcspn calcola la lunghezza della parte iniziale della stringa che non contiene il carattere '\n'
+    //printf("Variabile 'pids_max_path' corretta: %s\n", pids_max_path);  // Stampa il percorso corretto del file pids.max
+
+    return 1;  // Ritorna 0 per indicare successo
+}
+
+int read_pids_max(void) {
+    char cgroup_path[PATH_MAX];
+    char pids_max_path[PATH_MAX];
+
+    get_cgroup_path(cgroup_path, sizeof(cgroup_path));
+    if (get_pids_max_path(cgroup_path, pids_max_path, sizeof(pids_max_path)) != 1) {
+        //fprintf(stderr, "Failed to determine pids.max path.\n");
+        return -1;
+    }
+    //printf("Variabile 'cgroup_path': %s\n", cgroup_path);  // Stampa il percorso del file cgroup
+    //printf("Variabile 'pids_max_path': %s\n", pids_max_path);  // Stampa il percorso del file pids.max 
+    FILE *file = fopen(pids_max_path, "r");
+    if (file == NULL) {
+        //perror("Failed to open pids.max file");
+        return -1;
+    }
+    // printf("Variabile 'file' aperta con successo per pids.max: %p\n", (void *)file);  // Stampa il puntatore al file aperto
+    char buffer[128];
+    if (fgets(buffer, sizeof(buffer), file) == NULL) {
+        //perror("Failed to read pids.max file");
+        fclose(file);
+        return -1;
+    }
+    //printf("Variabile 'buffer' letta: %s\n", buffer);  // Stampa il contenuto del buffer letto
+    fclose(file);
+    //printf("File pids.max chiuso.\n");  // Stampa un messaggio di chiusura del file
+    if (buffer[0] == 'm') {
+        //printf("No limit on the number of processes\n");
+        return -1;
+    } else {
+        int max_processes = atoi(buffer);
+        //printf("Variabile 'max_processes': %d\n", max_processes);  // Stampa il numero massimo di processi
+        return max_processes;
+    }
+}
+
+
+long get_free_memory(void) {
+    // Apre il file /proc/meminfo in modalità lettura
+    FILE *file = fopen("/proc/meminfo", "r");
+    if (file == NULL) {
+        perror("fopen");
+        return -1; 
+    }
+    char line[256];  // nuffer
+    long free_memory_kb = -1;  // Variabile per memorizzare la memoria libera in kilobytes
+    // Scansione del file /proc/meminfo per trovare la riga contenente "MemFree:"
+    while (fgets(line, sizeof(line), file)) {
+        if (strncmp(line, "MemFree:", 8) == 0) {
+            // Legge il valore di memoria libera dopo "MemFree:" e lo memorizza in free_memory_kb
+            sscanf(line + 8, "%ld", &free_memory_kb);
+            break;  // Esce dal loop una volta trovata la linea desiderata
+        }
+    }
+    fclose(file);  // Chiude il file /proc/meminfo
+    if (free_memory_kb == -1) {
+        fprintf(stderr, "Failed to find MemFree in /proc/meminfo\n");
+        return -1;
+    }
+    long free_memory_mb = free_memory_kb / 1024;// Converto in megabytes
+    //printf("Mem free %ld MB\n", free_memory_mb);
+    return free_memory_mb;
+}
+
+// Funzione per calcolare la probabilità adattiva, si basa sulla regola piu restringente tra pid massimi di tipo del processo o pid massimi del utente oppure sulla memoria liber
+int adaptive_probability(int user_limit, int cgroup_limit) {
+	long free_mem = get_free_memory();
+	double prob_u_l, prob_cg, param;
+	double prob_mem_free= (double)100/free_mem;
 	int active_process=ctrl_sem_getval(shm_sem_get_startid(stats.info), 2);
-    if (active_process >= MAX_ATOMS) {
+	prob_cg=(double)active_process/cgroup_limit;
+	prob_u_l=(double)active_process/user_limit;
+    if ((active_process >= user_limit) || (active_process >=cgroup_limit) || (free_mem <= 100)) {
         return -1; // Blocco totale se abbiamo raggiunto il limite
     }
-    double probability = (double)active_process / MAX_ATOMS; // Probabilità adattiva
-	double random_value = (((double)rand() / RAND_MAX) * 0.9); // Numero casuale tra 0 e 0.
+    double probability = max3(prob_cg, prob_u_l, prob_mem_free);
+	double random_value = (((double)rand() / RAND_MAX) * 0.9); // Numero casuale tra 0 e 0.9
 	//printf("%lf \n", probability-random_value);
     if (random_value < probability) {
         return 1; // indica che o scissione+waste oppure blocca scissione/ nel secondo caso significa che blocca scissione
     }else{
     return 0; // Indica che la scissione può avvenire/ nel secondo caso indica che scinde+waste
 	}
+}
+
+double max3(double a, double b, double c) {
+    if (a >= b && a >= c) {
+        return a;
+    } else if (b >= a && b >= c) {
+        return b;
+    } else {
+        return c;
+    }
 }
 
 

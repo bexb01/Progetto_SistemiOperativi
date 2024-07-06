@@ -67,9 +67,10 @@ int main(int argc, char *argv[]){
 	msg_q_a_a_init(stats.info);	//gli passiamo il valore del puntatore *info che è l'indirizzo della structct shm_info_t che è dove salviamo l'id con la funzione				
 	shm_sem_init(stats.info);
 	init_atoms();
-	terminal_inhibitor();
+	
 	init_alimentation();
 	init_activator();
+	terminal_inhibitor();
 	printf("Attesa che tutti i processi figli vengano creati...\n");
 	if(shm_sem_ready(stats.info)!= 0){// fino a quando semaforo non è ready aspettiamo
 		//printf("attendo creazione figli\n");

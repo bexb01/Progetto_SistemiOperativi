@@ -1,5 +1,10 @@
+per il calcolo della memoria fare memoria che vuoi che rimanga libera es 100 diviso memoria libera 
+se la mem libera è minore del limite che hai messo es 100 allora valore sempre maggiore di 1 e blocca sempre
+
 semaphore.c - sem_getval: Failed to get semaphore value
 gestire l'uscita dal processo nel caso non si trova la mem condivisa/ semaforo
+
+magari aggiungere anche dei limiti sulla quantità di atomi inizializzabili come atomi iniziali
 
 
 aggiungere un semaforo che avvisa che ci sono delle fork in corso cosi che master deve aspettare che tutte le 
@@ -121,83 +126,9 @@ FATTO La presenza o meno del processo inibitore deve poter essere scelta a run-t
 Inoltre, l’utente deve poter fermare (e far ripartire) il processo inibitore pi`u volte da terminale attraverso un
 meccanismo a scelta del programmatore
 
-Codice Aggiornato
 
-c
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
 
-#define MAX_ATOMS 5000
-
-// Funzione per calcolare la probabilità adattiva
-double adaptive_probability(int active_atoms) {
-    if (active_atoms >= MAX_ATOMS) {
-        return 1.0; // Blocco totale se abbiamo raggiunto il limite
-    }
-    return (double)active_atoms / MAX_ATOMS; // Probabilità adattiva
-}
-
-// Funzione per decidere se bloccare la scissione o trasformare in scoria
-int should_block_or_waste_fission(int active_atoms) {
-    double probability = adaptive_probability(active_atoms);
-    double random_value = (double)rand() / RAND_MAX; // Numero casuale tra 0 e 1
-    if (random_value < probability) {
-        return rand() % 2; // Restituisce 0 o 1 casualmente per blocco o scoria
-    }
-    return -1; // Indica che la scissione può avvenire
-}
-
-// Simula la scissione di un atomo
-void fission(int *active_atoms) {
-    int decision = should_block_or_waste_fission(*active_atoms);
-    if (decision == 0) {
-        printf("Fission converted to waste.\n");
-        return;
-    } else if (decision == 1) {
-        printf("Fission blocked.\n");
-        return;
-    }
-
-    // Altrimenti, la scissione avviene normalmente
-    printf("Fission occurs. Active atoms increased.\n");
-    *active_atoms += 1; // Aumentiamo il conteggio degli atomi attivi
-}
-
-int main() {
-    srand(time(NULL)); // Inizializza il generatore di numeri casuali
-
-    int active_atoms = 0;
-    
-    // Simuliamo una serie di scissioni
-    for (int i = 0; i < 100; i++) {
-        fission(&active_atoms);
-        printf("Active atoms: %d\n", active_atoms);
-        if (active_atoms >= MAX_ATOMS) {
-            printf("Reached maximum number of active atoms.\n");
-            break;
-        }
-    }
-
-    return 0;
-}
-
-Spiegazione del Codice
-
-    adaptive_probability: Questa funzione calcola la probabilità di bloccare la scissione in base al numero di atomi attivi. La probabilità aumenta linearmente man mano che il numero di atomi attivi si avvicina al massimo consentito.
-
-    should_block_or_waste_fission: Questa funzione utilizza la probabilità adattiva per decidere se bloccare la scissione o trasformarla in scoria. Se il valore casuale è inferiore alla probabilità adattiva, la funzione restituisce casualmente 0 o 1 (blocco o scoria). Altrimenti, restituisce -1 per indicare che la scissione può avvenire.
-
-    fission: Questa funzione verifica la decisione restituita da should_block_or_waste_fission. Se la decisione è 0, la scissione viene trasformata in scoria. Se la decisione è 1, la scissione viene bloccata. Se la decisione è -1, la scissione avviene normalmente e il numero di atomi attivi aumenta.
-
-    main: Questa funzione simula una serie di scissioni per dimostrare il funzionamento della logica di blocco adattiva e della trasformazione in scoria. Si interrompe quando il numero massimo di atomi attivi è raggiunto.
-
-Considerazioni Finali
-
-Con questo approccio, la probabilità di bloccare la scissione o trasformarla in scoria aumenta gradualmente man mano che ci avviciniamo al limite massimo di atomi attivi, rendendo il sistema sempre più restrittivo. Questo garantisce che il numero di atomi attivi rimanga sotto controllo e non superi il limite massimo.
-c'è un comando per vedere qual'è il limite di processi creabili dal utente su linux? in modo tale che il numero massimo di atomi creabili combaci col num max di processi creabili?
-ChatGPT
 
 Sì, puoi utilizzare il comando ulimit su Linux per vedere il limite massimo di processi che un utente può creare. Specificamente, il comando ulimit -u ti mostrerà il numero massimo di processi che l'utente corrente può avere contemporaneamente.
 
@@ -233,7 +164,7 @@ Uso nel Programma
 Puoi ottenere questo valore nel tuo programma in C e utilizzarlo per impostare il numero massimo di atomi attivi. Ecco un esempio di come puoi fare questo:
 
 c
-
+s
 #include <stdio.h>
 #include <sys/resource.h>
 #include <unistd.h>
