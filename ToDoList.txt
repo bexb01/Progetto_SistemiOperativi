@@ -1,20 +1,40 @@
-per il calcolo della memoria fare memoria che vuoi che rimanga libera es 100 diviso memoria libera 
-se la mem libera è minore del limite che hai messo es 100 allora valore sempre maggiore di 1 e blocca sempre
-
-semaphore.c - sem_getval: Failed to get semaphore value
+NON RICORDO SE AVEVO AGGIUSTATO semaphore.c - sem_getval: Failed to get semaphore value
 gestire l'uscita dal processo nel caso non si trova la mem condivisa/ semaforo
 
-magari aggiungere anche dei limiti sulla quantità di atomi inizializzabili come atomi iniziali
+magari aggiungere anche dei limiti sulla quantità di atomi creabili come atomi iniziali  perche se 
+inizializzo l'esecuzione con un numero troppo alto di atomi , che supera gia i limiti di sistema, es quelli
+di cgroup o di user_limit, allora le fork potrebbero fallire prima dell'inizio dell'esecuzione.
+vedere come gestire
 
 
 aggiungere un semaforo che avvisa che ci sono delle fork in corso cosi che master deve aspettare che tutte le 
 fork teminino poi puo chiudersi e nel frattempo pero non possono essere vviate nuove fork
 quindi di sicuro master o chi di sovere setta il valore di semaforo di esecuzione a 0 e poi si aspettano le foork
 
-errore del makefile quando uso make killall kill
+errore del makefile quando uso make killall kill  (non è proprio un errore ma meglio aggiustare macari)
 
 
 processo inibitore 
+
+DA FARE ME SA assorbe parte della quantit`a di energia prodotta dalla scissione dell’atomo diminuendo la quantit`a di energia
+che viene liberata (QUESTO AGISCE DIRETTAMENTE NELL'ATOMO, ATOMO CONTROLLA MEM CONDIVIDSA CHE L'INIBITOE SIA ATTIVATO E MODIFICA LA FUNZIONE DI ENERGIA LIBERATA
+IMPLICA UN SEMAFORO O UNA VARIABILE IN MEMORIA CONDIVISA)
+
+
+FATTO limita il numero di scissioni agendo sull’operazione di scissione rendendola probabilistica (ad esempio decidendo
+se la scissione debba avvenire o meno oppure trasformando in scoria uno degli atomi prodotti dopo la scissione)(STESSA COSA, L'ATOMO CONTROLLA CHE L'INIBITORE SIA ATTIVO CON UN SEMAFORO E 
+USA UNA FUNZIONE RANDOMICA DI 3 NUMERI PER SCISSIONE, NON SCISSIONE O SCISSIONE E UNO DEI DUE ATOMI PRODOTTI DIVENTA SCORIA)
+4
+Il meccanismo di assorbimento e quello di limitazione delle scissioni sono scelti dal programmatore e devono
+essere basati su qualche criterio adattivo.
+
+
+FATTO La presenza o meno del processo inibitore deve poter essere scelta a run-time, all’inizio della simulazione.
+
+ Nel caso in cui il processo inibitore sia attivo, ci si aspetta che la terminazione per “explode” e “meltdown” non avvenga.
+Inoltre, l’utente deve poter fermare (e far ripartire) il processo inibitore pi`u volte da terminale attraverso un
+meccanismo a scelta del programmatore
+
 
 
     PER FARLO BLOCCARE O RIPARTIRE SI USANO SEGNALI DA LINE ADI COMANDO
@@ -107,231 +127,3 @@ L'uso dei segnali è una soluzione standard e efficace per controllare il compor
 
 
 
-assorbe parte della quantit`a di energia prodotta dalla scissione dell’atomo diminuendo la quantit`a di energia
-che viene liberata (QUESTO AGISCE DIRETTAMENTE NELL'ATOMO, QUESTO CONTROLLA MEM CONDIVIDSA CHE L'INIBITOE SIA ATTIVATO E MODIFICA LA FUNZIONE DI ENERGIA LIBERATA
-IMPLICA UN SEMAFORO O UNA VARIABILE IN MEMORIA CONDIVISA)
-
-
-• limita il numero di scissioni agendo sull’operazione di scissione rendendola probabilistica (ad esempio decidendo
-se la scissione debba avvenire o meno oppure trasformando in scoria uno degli atomi prodotti dopo la scissione)(STESSA COSA, L'ATOMO CONTROLLA CHE L'INIBITORE SIA ATTIVO CON UN SEMAFORO E 
-USA UNA FUNZIONE RANDOMICA DI 3 NUMERI PER SCISSIONE, NON SCISSIONE O SCISSIONE E UNO DEI DUE ATOMI PRODOTTI DIVENTA SCORIA)
-4
-Il meccanismo di assorbimento e quello di limitazione delle scissioni sono scelti dal programmatore e devono
-essere basati su qualche criterio adattivo.
-
-
-FATTO La presenza o meno del processo inibitore deve poter essere scelta a run-time, all’inizio della simulazione.
-
- Nel caso in cui il processo inibitore sia attivo, ci si aspetta che la terminazione per “explode” e “meltdown” non avvenga.
-Inoltre, l’utente deve poter fermare (e far ripartire) il processo inibitore pi`u volte da terminale attraverso un
-meccanismo a scelta del programmatore
-
-
-
-
-
-Sì, puoi utilizzare il comando ulimit su Linux per vedere il limite massimo di processi che un utente può creare. Specificamente, il comando ulimit -u ti mostrerà il numero massimo di processi che l'utente corrente può avere contemporaneamente.
-
-Ecco come puoi fare:
-
-sh
-
-ulimit -u
-
-Questo comando restituirà un numero che rappresenta il massimo numero di processi che l'utente corrente può creare.
-
-Se vuoi vedere o impostare i limiti per tutti gli utenti, puoi controllare il file /etc/security/limits.conf. Ecco come puoi vedere il contenuto del file:
-
-sh
-
-cat /etc/security/limits.conf
-
-Modifica del limite di processi
-
-Se hai bisogno di aumentare il limite massimo di processi, puoi farlo aggiungendo o modificando le linee in /etc/security/limits.conf:
-
-plaintext
-
-# Example entry to set a limit for a specific user
-username     hard    nproc       10000
-
-# Example entry to set a limit for all users
-*            hard    nproc       10000
-
-Dopo aver apportato modifiche a questo file, potrebbe essere necessario riavviare il sistema o almeno la sessione dell'utente per applicare le nuove impostazioni.
-Uso nel Programma
-
-Puoi ottenere questo valore nel tuo programma in C e utilizzarlo per impostare il numero massimo di atomi attivi. Ecco un esempio di come puoi fare questo:
-
-c
-s
-#include <stdio.h>
-#include <sys/resource.h>
-#include <unistd.h>
-
-int get_max_processes() {
-    struct rlimit limit;
-    if (getrlimit(RLIMIT_NPROC, &limit) == 0) {
-        return (int)limit.rlim_cur;
-    } else {
-        perror("getrlimit");
-        return -1;
-    }
-}
-
-int main() {
-    int max_processes = get_max_processes();
-    if (max_processes != -1) {
-        printf("Maximum number of processes: %d\n", max_processes);
-    }
-    return 0;
-}
-
-Questo programma recupera il limite massimo di processi per l'utente corrente e lo stampa. Puoi utilizzare questo valore per impostare il numero massimo di atomi attivi nel tuo programma.
-
-
-
-
-
-
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>  // Include PATH_MAX
-#include <string.h>  // Include memset
-
-void get_process_limit_path(char *path_buffer, size_t buffer_size, pid_t pid) {
-    snprintf(path_buffer, buffer_size, "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/snap.code.code-d6670ae6-8f30-47c3-bc0b-544b579abf07.scope/pids.peak", pid);
-}
-
-int main() {
-    char path[PATH_MAX];
-    pid_t pid = getpid();  // Use the current process ID, change this as needed
-
-    get_process_limit_path(path, sizeof(path), pid);
-    
-    FILE *file = fopen(path, "r");
-
-    if (file == NULL) {
-        perror("Failed to open file");
-        return EXIT_FAILURE;
-    }
-
-    char buffer[128];
-    if (fgets(buffer, sizeof(buffer), file) == NULL) {
-        perror("Failed to read file");
-        fclose(file);
-        return EXIT_FAILURE;
-    }
-
-    fclose(file);
-
-    if (buffer[0] == 'm') {
-        printf("No limit on the number of processes\n");
-    } else {
-        int max_processes = atoi(buffer);
-        printf("Maximum number of processes: %d\n", max_processes);
-    }
-
-    return EXIT_SUCCESS;
-}
-
-
-
-Sì, puoi ottenere il valore della memoria libera e salvarlo in una variabile in un programma C. Su Linux, uno dei modi per farlo è leggere il file /proc/meminfo, che contiene informazioni sulla memoria del sistema. Ecco un esempio di come puoi fare questo:
-
-c
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-long get_free_memory() {
-    FILE *file = fopen("/proc/meminfo", "r");
-    if (file == NULL) {
-        perror("fopen");
-        return -1;
-    }
-
-    char line[256];
-    long free_memory = -1;
-
-    while (fgets(line, sizeof(line), file)) {
-        if (strncmp(line, "MemFree:", 8) == 0) {
-            sscanf(line + 8, "%ld", &free_memory);
-            free_memory *= 1024; // Convert kB to bytes
-            break;
-        }
-    }
-
-    fclose(file);
-    return free_memory;
-}
-
-int main() {
-    long free_memory = get_free_memory();
-    if (free_memory != -1) {
-        printf("Free memory: %ld bytes\n", free_memory);
-    } else {
-        printf("Failed to get free memory.\n");
-    }
-    return 0;
-}
-
-Spiegazione del codice
-
-    Apertura del file /proc/meminfo:
-
-    c
-
-FILE *file = fopen("/proc/meminfo", "r");
-if (file == NULL) {
-    perror("fopen");
-    return -1;
-}
-
-Questo apre il file /proc/meminfo in modalità di lettura. Se l'apertura del file fallisce, stampa un messaggio di errore e ritorna -1.
-
-Lettura del file riga per riga:
-
-c
-
-char line[256];
-long free_memory = -1;
-
-while (fgets(line, sizeof(line), file)) {
-    if (strncmp(line, "MemFree:", 8) == 0) {
-        sscanf(line + 8, "%ld", &free_memory);
-        free_memory *= 1024; // Convert kB to bytes
-        break;
-    }
-}
-
-Questo legge il file riga per riga finché non trova la linea che inizia con "MemFree:". Quando trova questa linea, usa sscanf per estrarre il valore della memoria libera e lo converte da kilobytes a bytes.
-
-Chiusura del file:
-
-c
-
-fclose(file);
-
-Questo chiude il file dopo aver finito di leggerlo.
-
-Uso del valore della memoria libera:
-
-c
-
-    int main() {
-        long free_memory = get_free_memory();
-        if (free_memory != -1) {
-            printf("Free memory: %ld bytes\n", free_memory);
-        } else {
-            printf("Failed to get free memory.\n");
-        }
-        return 0;
-    }
-
-    Questo chiama la funzione get_free_memory e stampa il valore della memoria libera se l'operazione ha avuto successo.
-
-Questo programma ti permette di ottenere il valore della memoria libera e di salvarlo in una variabile in C.

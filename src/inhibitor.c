@@ -38,5 +38,5 @@ int main(int argc, char *argv[]){
 		sleep(1);
 	}
 
-	sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo vlore quando lo disaattivimo
 }

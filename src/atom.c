@@ -94,12 +94,12 @@ int main(int argc, char *argv[]){
 			if(atomic_number > min_atomic_n){
 				//printf("%d \n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 6));
 				//srand(time(NULL));
-				if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 6)==1){
+				if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 6)==1){ // se inibitore è attivo
 					split_prob=adaptive_probability(user_limit, cgroup_limit);
 					if(split_prob ==  -1){ //-1 blocco tutto, 1 splittowaste o blocco, 0 splitto
 						//non faccio niente=blocco lo split
 					}else if(split_prob ==  1){
-						split_prob=adaptive_probability(user_limit, cgroup_limit);
+						split_prob=adaptive_probability(user_limit, cgroup_limit); //riuso la funzione di probabilità 
 						if((split_prob == 1) || (split_prob == -1)){ //probabilità del secondo caso//split con waste o non split
 							//blocchiamo split
 						}else if(split_prob == 0){
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]){
 						atomic_number=split(atomic_number, 0); //gli passiamo n atomico padre
 					}
 					//printf("scissione avvenuta tramite messaggio da activator. ho numero atomico %d\n", atomic_number);
-				}else{
+				}else{ // se inibitore non è attivo splitto
 					atomic_number=split(atomic_number, 0);
 				}
 			}else{
@@ -254,7 +254,7 @@ int get_pids_max_path(char *cgroup_path, char *pids_max_path, size_t buffer_size
     pids_max_path[strcspn(pids_max_path, "\n")] = '\0';  // strcspn calcola la lunghezza della parte iniziale della stringa che non contiene il carattere '\n'
     //printf("Variabile 'pids_max_path' corretta: %s\n", pids_max_path);  // Stampa il percorso corretto del file pids.max
 
-    return 1;  // Ritorna 0 per indicare successo
+    return 1;  // Ritorna 1 per indicare successo
 }
 
 int read_pids_max(void) {
@@ -321,7 +321,7 @@ long get_free_memory(void) {
     return free_memory_mb;
 }
 
-// Funzione per calcolare la probabilità adattiva, si basa sulla regola piu restringente tra pid massimi di tipo del processo o pid massimi del utente oppure sulla memoria liber
+// Funzione per calcolare la probabilità adattiva, si basa sulla regola piu restringente tra pid massimi di tipo del processo o pid massimi del utente oppure sulla memoria libera
 int adaptive_probability(int user_limit, int cgroup_limit) {
 	long free_mem = get_free_memory();
 	double prob_u_l, prob_cg, param;
