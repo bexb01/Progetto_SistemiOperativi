@@ -115,8 +115,8 @@ void shm_info_delete(shm_info_t *inf){
 void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
 	inf->sem_start_id = sem_create(SEM_ID_READY, 10);
-	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore 
-	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore
+	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore conta i processi attivi
+	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore 1 start 0 stay
 	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
 
 	sem_setval(inf->sem_start_id, 3, 1);    // energy_prod_tot sem 
@@ -124,10 +124,11 @@ void shm_sem_init(shm_info_t *inf){// cera i semafori
 	sem_setval(inf->sem_start_id, 5, 1);    // waste_tot
 	sem_setval(inf->sem_start_id, 6, 0);    // inhibitor
 
-	sem_setval(inf->sem_start_id, 7, 1);    // end simulation sem
+	sem_setval(inf->sem_start_id, 7, 1);    // end simulation sem 1 running 0 shutdown
 
 	sem_setval(inf->sem_start_id, 8, 1);    // n_activation_tot
 	sem_setval(inf->sem_start_id, 9, 1);    // n_split_tot
+	//sem_setval(inf->sem_start_id, 10, 0);	// process semaphore incrementato dal master e decrementato dai processi creati dal master
 
 
 }

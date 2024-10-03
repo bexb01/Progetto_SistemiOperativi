@@ -1,0 +1,656 @@
+caricando parametri di configurazione.
+inizializzare esecuzione con Inibitore? (s/n): Inibitore non avviato.
+Attesa che tutti i processi figli vengano creati...
+processi totali: 57
+simulazione avviata
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 78 
+scissioni totali = 0 
+scissioni ultimo secondo  = 0
+attivazioni totali = 0
+attivazioni ultimo secondo  = 0
+energia prodotta totale = 0
+energia prodotta ultimo secondo  = 0
+waste totale = 0
+waste ultimo secondo  = 0
+energia consumata totale  = 0
+energia consumata ultimo secondo  = 0
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 77 
+scissioni totali = 23 
+scissioni ultimo secondo  = 23
+attivazioni totali = 25
+attivazioni ultimo secondo  = 25
+energia prodotta totale = 10499
+energia prodotta ultimo secondo  = 10499
+waste totale = 1
+waste ultimo secondo  = 1
+energia consumata totale  = 10
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 76 
+scissioni totali = 56 
+scissioni ultimo secondo  = 33
+attivazioni totali = 64
+attivazioni ultimo secondo  = 39
+energia prodotta totale = 20284
+energia prodotta ultimo secondo  = 9785
+waste totale = 6
+waste ultimo secondo  = 5
+energia consumata totale  = 20
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 75 
+scissioni totali = 95 
+scissioni ultimo secondo  = 39
+attivazioni totali = 103
+attivazioni ultimo secondo  = 39
+energia prodotta totale = 28928
+energia prodotta ultimo secondo  = 8644
+waste totale = 7
+waste ultimo secondo  = 1
+energia consumata totale  = 30
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 74 
+scissioni totali = 123 
+scissioni ultimo secondo  = 28
+attivazioni totali = 133
+attivazioni ultimo secondo  = 30
+energia prodotta totale = 41882
+energia prodotta ultimo secondo  = 12954
+waste totale = 10
+waste ultimo secondo  = 3
+energia consumata totale  = 40
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 73 
+scissioni totali = 155 
+scissioni ultimo secondo  = 32
+attivazioni totali = 171
+attivazioni ultimo secondo  = 38
+energia prodotta totale = 50264
+energia prodotta ultimo secondo  = 8382
+waste totale = 15
+waste ultimo secondo  = 5
+energia consumata totale  = 50
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 72 
+scissioni totali = 194 
+scissioni ultimo secondo  = 39
+attivazioni totali = 216
+attivazioni ultimo secondo  = 45
+energia prodotta totale = 61631
+energia prodotta ultimo secondo  = 11367
+waste totale = 21
+waste ultimo secondo  = 6
+energia consumata totale  = 60
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 71 
+scissioni totali = 226 
+scissioni ultimo secondo  = 32
+attivazioni totali = 248
+attivazioni ultimo secondo  = 32
+energia prodotta totale = 67646
+energia prodotta ultimo secondo  = 6015
+waste totale = 22
+waste ultimo secondo  = 1
+energia consumata totale  = 70
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 70 
+scissioni totali = 270 
+scissioni ultimo secondo  = 44
+attivazioni totali = 297
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 84154
+energia prodotta ultimo secondo  = 16508
+waste totale = 25
+waste ultimo secondo  = 3
+energia consumata totale  = 80
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 69 
+scissioni totali = 309 
+scissioni ultimo secondo  = 39
+attivazioni totali = 337
+attivazioni ultimo secondo  = 40
+energia prodotta totale = 103056
+energia prodotta ultimo secondo  = 18902
+waste totale = 27
+waste ultimo secondo  = 2
+energia consumata totale  = 90
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 68 
+scissioni totali = 344 
+scissioni ultimo secondo  = 35
+attivazioni totali = 373
+attivazioni ultimo secondo  = 36
+energia prodotta totale = 111683
+energia prodotta ultimo secondo  = 8627
+waste totale = 27
+waste ultimo secondo  = 0
+energia consumata totale  = 100
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 67 
+scissioni totali = 383 
+scissioni ultimo secondo  = 39
+attivazioni totali = 415
+attivazioni ultimo secondo  = 42
+energia prodotta totale = 128967
+energia prodotta ultimo secondo  = 17284
+waste totale = 29
+waste ultimo secondo  = 2
+energia consumata totale  = 110
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 66 
+scissioni totali = 431 
+scissioni ultimo secondo  = 48
+attivazioni totali = 463
+attivazioni ultimo secondo  = 48
+energia prodotta totale = 143722
+energia prodotta ultimo secondo  = 14755
+waste totale = 32
+waste ultimo secondo  = 3
+energia consumata totale  = 120
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 65 
+scissioni totali = 471 
+scissioni ultimo secondo  = 40
+attivazioni totali = 506
+attivazioni ultimo secondo  = 43
+energia prodotta totale = 160201
+energia prodotta ultimo secondo  = 16479
+waste totale = 35
+waste ultimo secondo  = 3
+energia consumata totale  = 130
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 64 
+scissioni totali = 516 
+scissioni ultimo secondo  = 45
+attivazioni totali = 553
+attivazioni ultimo secondo  = 47
+energia prodotta totale = 171863
+energia prodotta ultimo secondo  = 11662
+waste totale = 37
+waste ultimo secondo  = 2
+energia consumata totale  = 140
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 63 
+scissioni totali = 563 
+scissioni ultimo secondo  = 47
+attivazioni totali = 602
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 185269
+energia prodotta ultimo secondo  = 13406
+waste totale = 38
+waste ultimo secondo  = 1
+energia consumata totale  = 150
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 62 
+scissioni totali = 601 
+scissioni ultimo secondo  = 38
+attivazioni totali = 646
+attivazioni ultimo secondo  = 44
+energia prodotta totale = 196379
+energia prodotta ultimo secondo  = 11110
+waste totale = 45
+waste ultimo secondo  = 7
+energia consumata totale  = 160
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 61 
+scissioni totali = 640 
+scissioni ultimo secondo  = 39
+attivazioni totali = 695
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 206217
+energia prodotta ultimo secondo  = 9838
+waste totale = 55
+waste ultimo secondo  = 10
+energia consumata totale  = 170
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 60 
+scissioni totali = 680 
+scissioni ultimo secondo  = 40
+attivazioni totali = 743
+attivazioni ultimo secondo  = 48
+energia prodotta totale = 221294
+energia prodotta ultimo secondo  = 15077
+waste totale = 61
+waste ultimo secondo  = 6
+energia consumata totale  = 180
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 59 
+scissioni totali = 719 
+scissioni ultimo secondo  = 39
+attivazioni totali = 786
+attivazioni ultimo secondo  = 43
+energia prodotta totale = 229977
+energia prodotta ultimo secondo  = 8683
+waste totale = 66
+waste ultimo secondo  = 5
+energia consumata totale  = 190
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 58 
+scissioni totali = 765 
+scissioni ultimo secondo  = 46
+attivazioni totali = 836
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 243455
+energia prodotta ultimo secondo  = 13478
+waste totale = 71
+waste ultimo secondo  = 5
+energia consumata totale  = 200
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 57 
+scissioni totali = 808 
+scissioni ultimo secondo  = 43
+attivazioni totali = 885
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 255641
+energia prodotta ultimo secondo  = 12186
+waste totale = 76
+waste ultimo secondo  = 5
+energia consumata totale  = 210
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 56 
+scissioni totali = 846 
+scissioni ultimo secondo  = 38
+attivazioni totali = 925
+attivazioni ultimo secondo  = 40
+energia prodotta totale = 266821
+energia prodotta ultimo secondo  = 11180
+waste totale = 78
+waste ultimo secondo  = 2
+energia consumata totale  = 220
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 55 
+scissioni totali = 892 
+scissioni ultimo secondo  = 46
+attivazioni totali = 975
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 280067
+energia prodotta ultimo secondo  = 13246
+waste totale = 83
+waste ultimo secondo  = 5
+energia consumata totale  = 230
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 54 
+scissioni totali = 939 
+scissioni ultimo secondo  = 47
+attivazioni totali = 1025
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 293171
+energia prodotta ultimo secondo  = 13104
+waste totale = 86
+waste ultimo secondo  = 3
+energia consumata totale  = 240
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 53 
+scissioni totali = 978 
+scissioni ultimo secondo  = 39
+attivazioni totali = 1068
+attivazioni ultimo secondo  = 43
+energia prodotta totale = 308490
+energia prodotta ultimo secondo  = 15319
+waste totale = 90
+waste ultimo secondo  = 4
+energia consumata totale  = 250
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 52 
+scissioni totali = 1021 
+scissioni ultimo secondo  = 43
+attivazioni totali = 1116
+attivazioni ultimo secondo  = 48
+energia prodotta totale = 325621
+energia prodotta ultimo secondo  = 17131
+waste totale = 95
+waste ultimo secondo  = 5
+energia consumata totale  = 260
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 51 
+scissioni totali = 1068 
+scissioni ultimo secondo  = 47
+attivazioni totali = 1166
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 340345
+energia prodotta ultimo secondo  = 14724
+waste totale = 98
+waste ultimo secondo  = 3
+energia consumata totale  = 270
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 50 
+scissioni totali = 1112 
+scissioni ultimo secondo  = 44
+attivazioni totali = 1215
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 351107
+energia prodotta ultimo secondo  = 10762
+waste totale = 103
+waste ultimo secondo  = 5
+energia consumata totale  = 280
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 49 
+scissioni totali = 1158 
+scissioni ultimo secondo  = 46
+attivazioni totali = 1265
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 363802
+energia prodotta ultimo secondo  = 12695
+waste totale = 107
+waste ultimo secondo  = 4
+energia consumata totale  = 290
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 48 
+scissioni totali = 1200 
+scissioni ultimo secondo  = 42
+attivazioni totali = 1314
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 375144
+energia prodotta ultimo secondo  = 11342
+waste totale = 113
+waste ultimo secondo  = 6
+energia consumata totale  = 300
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 47 
+scissioni totali = 1237 
+scissioni ultimo secondo  = 37
+attivazioni totali = 1355
+attivazioni ultimo secondo  = 41
+energia prodotta totale = 387047
+energia prodotta ultimo secondo  = 11903
+waste totale = 118
+waste ultimo secondo  = 5
+energia consumata totale  = 310
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 46 
+scissioni totali = 1285 
+scissioni ultimo secondo  = 48
+attivazioni totali = 1405
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 403483
+energia prodotta ultimo secondo  = 16436
+waste totale = 120
+waste ultimo secondo  = 2
+energia consumata totale  = 320
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 45 
+scissioni totali = 1327 
+scissioni ultimo secondo  = 42
+attivazioni totali = 1454
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 418214
+energia prodotta ultimo secondo  = 14731
+waste totale = 127
+waste ultimo secondo  = 7
+energia consumata totale  = 330
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 44 
+scissioni totali = 1374 
+scissioni ultimo secondo  = 47
+attivazioni totali = 1504
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 428168
+energia prodotta ultimo secondo  = 9954
+waste totale = 130
+waste ultimo secondo  = 3
+energia consumata totale  = 340
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 43 
+scissioni totali = 1420 
+scissioni ultimo secondo  = 46
+attivazioni totali = 1553
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 444791
+energia prodotta ultimo secondo  = 16623
+waste totale = 133
+waste ultimo secondo  = 3
+energia consumata totale  = 350
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 42 
+scissioni totali = 1465 
+scissioni ultimo secondo  = 45
+attivazioni totali = 1603
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 455699
+energia prodotta ultimo secondo  = 10908
+waste totale = 138
+waste ultimo secondo  = 5
+energia consumata totale  = 360
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 41 
+scissioni totali = 1510 
+scissioni ultimo secondo  = 45
+attivazioni totali = 1650
+attivazioni ultimo secondo  = 47
+energia prodotta totale = 468296
+energia prodotta ultimo secondo  = 12597
+waste totale = 140
+waste ultimo secondo  = 2
+energia consumata totale  = 370
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 40 
+scissioni totali = 1550 
+scissioni ultimo secondo  = 40
+attivazioni totali = 1695
+attivazioni ultimo secondo  = 45
+energia prodotta totale = 485128
+energia prodotta ultimo secondo  = 16832
+waste totale = 145
+waste ultimo secondo  = 5
+energia consumata totale  = 380
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 39 
+scissioni totali = 1596 
+scissioni ultimo secondo  = 46
+attivazioni totali = 1745
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 495469
+energia prodotta ultimo secondo  = 10341
+waste totale = 149
+waste ultimo secondo  = 4
+energia consumata totale  = 390
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 38 
+scissioni totali = 1641 
+scissioni ultimo secondo  = 45
+attivazioni totali = 1794
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 509612
+energia prodotta ultimo secondo  = 14143
+waste totale = 153
+waste ultimo secondo  = 4
+energia consumata totale  = 400
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 37 
+scissioni totali = 1687 
+scissioni ultimo secondo  = 46
+attivazioni totali = 1844
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 524123
+energia prodotta ultimo secondo  = 14511
+waste totale = 157
+waste ultimo secondo  = 4
+energia consumata totale  = 410
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 36 
+scissioni totali = 1729 
+scissioni ultimo secondo  = 42
+attivazioni totali = 1894
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 543241
+energia prodotta ultimo secondo  = 19118
+waste totale = 165
+waste ultimo secondo  = 8
+energia consumata totale  = 420
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 35 
+scissioni totali = 1772 
+scissioni ultimo secondo  = 43
+attivazioni totali = 1943
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 557968
+energia prodotta ultimo secondo  = 14727
+waste totale = 171
+waste ultimo secondo  = 6
+energia consumata totale  = 430
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 34 
+scissioni totali = 1814 
+scissioni ultimo secondo  = 42
+attivazioni totali = 1991
+attivazioni ultimo secondo  = 48
+energia prodotta totale = 567740
+energia prodotta ultimo secondo  = 9772
+waste totale = 177
+waste ultimo secondo  = 6
+energia consumata totale  = 440
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 33 
+scissioni totali = 1860 
+scissioni ultimo secondo  = 46
+attivazioni totali = 2041
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 579021
+energia prodotta ultimo secondo  = 11281
+waste totale = 181
+waste ultimo secondo  = 4
+energia consumata totale  = 450
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 32 
+scissioni totali = 1903 
+scissioni ultimo secondo  = 43
+attivazioni totali = 2090
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 591566
+energia prodotta ultimo secondo  = 12545
+waste totale = 187
+waste ultimo secondo  = 6
+energia consumata totale  = 460
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 31 
+scissioni totali = 1945 
+scissioni ultimo secondo  = 42
+attivazioni totali = 2139
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 607976
+energia prodotta ultimo secondo  = 16410
+waste totale = 194
+waste ultimo secondo  = 7
+energia consumata totale  = 470
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 30 
+scissioni totali = 1986 
+scissioni ultimo secondo  = 41
+attivazioni totali = 2189
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 619913
+energia prodotta ultimo secondo  = 11937
+waste totale = 203
+waste ultimo secondo  = 9
+energia consumata totale  = 480
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 29 
+scissioni totali = 2031 
+scissioni ultimo secondo  = 45
+attivazioni totali = 2238
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 635429
+energia prodotta ultimo secondo  = 15516
+waste totale = 207
+waste ultimo secondo  = 4
+energia consumata totale  = 490
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 28 
+scissioni totali = 2077 
+scissioni ultimo secondo  = 46
+attivazioni totali = 2288
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 656093
+energia prodotta ultimo secondo  = 20664
+waste totale = 211
+waste ultimo secondo  = 4
+energia consumata totale  = 500
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 27 
+scissioni totali = 2123 
+scissioni ultimo secondo  = 46
+attivazioni totali = 2337
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 674967
+energia prodotta ultimo secondo  = 18874
+waste totale = 214
+waste ultimo secondo  = 3
+energia consumata totale  = 510
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 26 
+scissioni totali = 2169 
+scissioni ultimo secondo  = 46
+attivazioni totali = 2387
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 691823
+energia prodotta ultimo secondo  = 16856
+waste totale = 218
+waste ultimo secondo  = 4
+energia consumata totale  = 520
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 25 
+scissioni totali = 2211 
+scissioni ultimo secondo  = 42
+attivazioni totali = 2436
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 702323
+energia prodotta ultimo secondo  = 10500
+waste totale = 225
+waste ultimo secondo  = 7
+energia consumata totale  = 530
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 24 
+scissioni totali = 2256 
+scissioni ultimo secondo  = 45
+attivazioni totali = 2486
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 717449
+energia prodotta ultimo secondo  = 15126
+waste totaMELTDOWN MELTDOWN MELTDOWN errore nella fork in alimentation
+le = 230
+waste ultimo secondo  = 5
+energia consumata totale  = 540
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 23 
+scissioni totali = 2301 
+scissioni ultimo secondo  = 45
+attivazioni totali = 2535
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 733444
+energia prodotta ultimo secondo  = 15995
+waste totale = 234
+waste ultimo secondo  = 4
+energia consumata totale  = 550
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 22 
+scissioni totali = 2347 
+scissioni ultimo secondo  = 46
+attivazioni totali = 2584
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 747963
+energia prodotta ultimo secondo  = 14519
+waste totale = 237
+waste ultimo secondo  = 3
+energia consumata totale  = 560
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 21 
+scissioni totali = 2393 
+scissioni ultimo secondo  = 46
+attivazioni totali = 2634
+attivazioni ultimo secondo  = 50
+energia prodotta totale = 766163
+energia prodotta ultimo secondo  = 18200
+waste totale = 241
+waste ultimo secondo  = 4
+energia consumata totale  = 570
+energia consumata ultimo secondo  = 10
+TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE 20 
+scissioni totali = 2437 
+scissioni ultimo secondo  = 44
+attivazioni totali = 2683
+attivazioni ultimo secondo  = 49
+energia prodotta totale = 787273
+energia prodotta ultimo secondo  = 21110
+waste totale = 246
+waste ultimo secondo  = 5
+energia consumata totale  = 580
+energia consumata ultimo secondo  = 10
+terminazione del processo MASTER.

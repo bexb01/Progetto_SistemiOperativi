@@ -177,7 +177,7 @@ pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasf
 		fprintf(stderr, "Errore nella fork: %s\n", strerror(errno));
         perror("Errore nella fork");
         printf("Codice di errore errno: %d\n", errno);
-		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in master\n");
+		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in master: prova a inizializzare l'esecuzione con meno atomi modificando il file confic_param.txt\n");
 		//blocco esecuzione
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
@@ -349,7 +349,7 @@ void exit_n_sec(int n_seconds){
 }
 
 void close_and_exit(){
-	while(sem_getval(shm_sem_get_startid(stats.info), 2)>0)
+	while(sem_getval(shm_sem_get_startid(stats.info), 0)>0)
 	{//printf("atomi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 		sleep(1);
 	}

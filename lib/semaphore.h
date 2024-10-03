@@ -11,7 +11,7 @@ void sem_setval(id_t sem_id, int sem_index, int value);
 
 int sem_getval(id_t sem_id, int sem_index);
 
-void sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags);
+int sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags);
 
 void sem_delete(id_t sem_id);
 

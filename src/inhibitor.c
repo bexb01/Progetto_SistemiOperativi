@@ -25,6 +25,8 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 					  //shm_info_t 
 };
 
+void close_and_exit();
+
 struct stats stats;
 
 int main(int argc, char *argv[]){
@@ -34,9 +36,29 @@ int main(int argc, char *argv[]){
 		exit(EXIT_FAILURE);
 	}
 
+	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	//sem_execute_semop(shm_sem_get_startid(stats.info), 10, -1, 0);
+
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
+		if(sem_getval(shm_sem_get_startid(stats.info), 7)==0){
+			close_and_exit();
+		}
 		sleep(1);
 	}
 
-	sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo vlore quando lo disaattivimo
+	sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo valore quando lo disaattivimo
+
+	while(sem_getval(shm_sem_get_startid(stats.info), 7)!=0){
+		sleep(1);
+	}
+	close_and_exit();
+}
+
+void close_and_exit(){
+	sem_execute_semop(shm_sem_get_startid(stats.info), 0, -1, 0);
+	shm_info_detach(stats.info);
+
+	//printf("terminazione del processo ACTIVATOR.\n");
+	exit(0);
+
 }

@@ -83,7 +83,7 @@ void nsleep(long step_nsec){
 }
 
 void close_and_exit(){
-	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 0, -1, 0);
 	//msg_queue_remove(stats.info);
 	shm_info_detach(stats.info);
 

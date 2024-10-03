@@ -52,6 +52,7 @@ int adaptive_probability(int user_limit, int cgroup_limit);
 int random_atomic_n(int max, int min);
 void update_waste(int waste);
 int ctrl_sem_getval(int sem_id, int sem_n);
+int ctrl_sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags);
 double max3(double a, double b, double c);
 
 struct stats stats;
@@ -378,7 +379,7 @@ void update_waste(int waste){// aggiorna le scorie in mem condivisa
 void update_energy(struct  atom_n_parent_child p_c){
 	int energy_val;
 	energy_val=energy(p_c);
-	while((ctrl_sem_getval(shm_sem_get_startid(stats.info), 3)==0) && sem_getval(shm_sem_get_startid(stats.info), 4)==0){
+	while((ctrl_sem_getval(shm_sem_get_startid(stats.info), 3)==0) && ctrl_sem_getval(shm_sem_get_startid(stats.info), 4)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 4, -1, 0);
@@ -447,13 +448,22 @@ int rcv_msg(int atomic_n){
 int ctrl_sem_getval(int sem_id, int sem_n){
 	int res;
 	if((res=sem_getval(sem_id, sem_n))<0){
-		close_and_exit();
+		exit(-1); // se fallisce la getval allora la mem cond o i semafori sono andati, quindi inutile fare close_and_exit
+	}
+	return res;
+}
+
+int ctrl_sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags){
+	int res;
+	if((res=sem_execute_semop(sem_id, sem_index, op_val, flags))<0){
+		exit(-1); // se fallisce la execute semop allora la mem cond o i semafori sono andati, quindi inutile fare close_and_exit
 	}
 	return res;
 }
 
 void close_and_exit(){
 	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 0, -1, 0);
 	//msg_queue_remove(stats.info); //la creazione eS la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
 	shm_info_detach(stats.info);
 

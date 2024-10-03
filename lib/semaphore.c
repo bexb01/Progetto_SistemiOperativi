@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 
+#include <errno.h>
 #include <stdio.h>
 #include "semaphore.h"
 
@@ -40,17 +41,28 @@ int sem_getval(id_t sem_id, int sem_index)
 {
 	int val;
 	if ((val = semctl(sem_id, sem_index, GETVAL)) < 0) {//retituisce il valore del semaforo di indice getval dell' insieme di semafori di id sem_id
-		dprintf(2, "semaphore.c - sem_getval: Failed to get semaphore value\n");
+		//printf("semaphore.c - sem_getval: Failed to get semaphore value\n");
 	}
 	return val;
 }
 
-void sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags)
+int sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags)
 {
 	struct sembuf operation; //sembuf è una struct che specifica i parametri per le operazioni che svolge semop
-
 	operation = create_sembuf(sem_index, op_val, flags); //indica l'indice del semaforo su cui lavorare, il valore da assegnargli e i flag tipo ipc_nowait
-	while(semop(sem_id, &operation, 1) == -1); //fa l'operazione specificata da sembuf o la prova a fare fino a quando il risultato non è diverso da -1 cioè fino a quando non esegue l'op
+
+	while (semop(sem_id, &operation, 1) == -1) {
+        if (errno == EINTR || errno == EAGAIN) {// EINTR: L'operazione è stata interrotta da un segnale. Riprovare. EAGAIN: Il semaforo è occupato, ma può essere ritentato. Riprovare.
+
+        } else if (errno == EIDRM || errno == EINVAL) {// EIDRM: Il set di semafori è stato rimosso. Uscire dal ciclo. EINVAL: ID di semaforo non valido o altre condizioni non riparabili.
+            //printf("semop failed: (EIDRM) or (EINVAL)\n");
+            return -1;
+        } else {// Qualsiasi altro errore. esce.
+			//printf("semop failed\n");
+            return -1;
+        }
+    }
+	return 1;
 }
 
 void sem_delete(id_t sem_id)
