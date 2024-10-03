@@ -127,3 +127,155 @@ L'uso dei segnali è una soluzione standard e efficace per controllare il compor
 
 
 
+
+
+robe da rimettere:
+inibitore
+
+#define _GNU_SOURCE
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <errno.h>
+#include <string.h>
+
+#include "../lib/semaphore.h"
+#include "include/msg_comunication.h"
+#include "include/shm_info.h"
+
+struct stats { //struct stats è formata da puntatori a memoria condivisa
+	//shm_n_atoms *atoms;
+	//shm_energy *energy; //e  molte altre da implementare
+	shm_info_t *info; //*inf = (shm_info_t *)shm_attach(shm_id); questo si trova nella funzione shm_info_attach, grazie a questo
+	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
+					  //shm_info_t 
+};
+
+struct stats stats;
+void close_and_exit();
+
+int main(int argc, char *argv[]){
+    printf("CIAO SONO L'INIBITOREEEEEEEEEEEEEEEEEEEEEE\n");
+
+	if(shm_info_attach(&stats.info)==-1){
+		exit(EXIT_FAILURE);
+	}
+
+	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 10, -1, 0);
+
+	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
+		if(sem_getval(shm_sem_get_startid(stats.info), 7)==0){
+			close_and_exit();
+		}
+		sleep(1);
+	}
+
+	sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo vlore quando lo disaattivimo
+
+	while(sem_getval(shm_sem_get_startid(stats.info), 7)!=0){
+		sleep(1);
+	}
+	close_and_exit();
+}
+
+void close_and_exit(){
+	shm_info_detach(stats.info);
+
+	//printf("terminazione del processo ACTIVATOR.\n");
+	exit(0);
+
+}
+
+
+ semafore.c
+#define _GNU_SOURCE
+
+#include <errno.h>
+#include <stdio.h>
+#include "semaphore.h"
+
+/* Private functions prototypes */
+static struct sembuf create_sembuf(int index, int semop_value, int flags);
+
+int sem_create(key_t sem_key, int nsems) //crea gruppo di semafori
+{
+	int res;
+	if (nsems <= 0) { //bisogna passargli un num di semafori maggiore di 0
+		dprintf(2, "semaphore.c - sem_create: nsems must be greater than 0.\n");
+		return -1;
+	}
+
+	if (( res = semget(sem_key, nsems, 0660 | IPC_CREAT | IPC_EXCL)) < 0) { //crea nsem semafori, sem_key è la chiave univoca che si trova in constants.h, ipc_creat crea l'insieme di semafori associato alla chiave solo se non esiste gia, restituisce l'id se esiste gia, ipc_excl combinato con creat se esiste gia un insieme di sem associato alla chiave semget fallisce restituisce -1 con errore eexist 
+		dprintf(2, "semaphore.c - sem_create: Failed to create semaphore array.\n");
+	}
+	return res; //restituisce id
+}
+
+int sem_get_id(key_t key)
+{
+	int res;
+	if ((res = semget(key, 0, 0)) == -1) { //mettendo il secondo e terzo parametro a 0 restituisce l'id dell'insieme di semafori
+		dprintf(2, "semaphore.c - sem_get_id: Failed to obtain semaphore array id.\n");
+	}
+	return res;
+}
+
+void sem_setval(id_t sem_id, int sem_index, int value)
+{
+	if (semctl(sem_id, sem_index, SETVAL, value) < 0) {//usa  semctl per settare il valore iniziale del semaforo di indice em_index
+		dprintf(2, "semaphore.c - sem_setval: Failed to set semaphore value\n");
+	}
+}
+
+int sem_getval(id_t sem_id, int sem_index)
+{
+	int val=0;
+	if ((val = semctl(sem_id, sem_index, GETVAL)) < 0) {//retituisce il valore del semaforo di indice sem_index dell' insieme di semafori di id sem_id
+		printf("semaphore.c - sem_getval: Failed to get semaphore value \n");
+	}
+	return val;
+}
+
+void sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags)
+{
+	struct sembuf operation; //sembuf è una struct che specifica i parametri per le operazioni che svolge semop
+	operation = create_sembuf(sem_index, op_val, flags); //indica l'indice del semaforo su cui lavorare, il valore da assegnargli e i flag tipo ipc_nowait
+
+	while (semop(sem_id, &operation, 1) == -1) {
+        if (errno == EINTR || errno == EAGAIN) {// EINTR: L'operazione è stata interrotta da un segnale. Riprovare. EAGAIN: Il semaforo è occupato, ma può essere ritentato. Riprovare.
+
+        } else if (errno == EIDRM || errno == EINVAL) {// EIDRM: Il set di semafori è stato rimosso. Uscire dal ciclo. EINVAL: ID di semaforo non valido o altre condizioni non riparabili.
+            printf("semop failed: semaphore set has been removed (EIDRM)\n");
+            break;
+        } else {// Qualsiasi altro errore. Stampa e esce.
+            break;
+        }
+    }
+}
+
+void sem_delete(id_t sem_id)
+{
+	if (semctl(sem_id, 0, IPC_RMID) < 0) { //cancella la lista di semafori specificando l'id
+		dprintf(2, "semaphore.c - sem_delete: Failed to delete semaphore set.\n");
+	}
+	//printf("list semafori cancellata.\n");
+}
+
+static struct sembuf create_sembuf(int index, int semop_value, int flags)//popola la struct sembuf utilizzata da sem_ececute_semop
+{
+	struct sembuf res;
+	res.sem_num = index;
+	res.sem_op = semop_value;
+	res.sem_flg = flags;
+
+	return res;
+}
