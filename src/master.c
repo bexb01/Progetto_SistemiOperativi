@@ -255,6 +255,7 @@ void signal_handler(int signal){
 void periodic_print(void){
 	int print;
 	int temp;
+	printf("inibitore attivo: %d\n", sem_getval(shm_sem_get_startid(stats.info), 6) );
 	while(sem_getval(shm_sem_get_startid(stats.info), 9)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
