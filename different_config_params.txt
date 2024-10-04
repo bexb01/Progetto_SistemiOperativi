@@ -1,3 +1,6 @@
+segnale per spegnere inibitore: killall -SIGUSR1 inhibitor
+segnale per riaccendere inibitore: killall -SIGUSR2 inhibitor
+
 inibitore disattivato
 MELTDOWN errore nella fork in alimentation
 
