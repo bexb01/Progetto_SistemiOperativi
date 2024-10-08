@@ -49,11 +49,13 @@ void init_random(void);
 int read_pids_max(void);
 long get_free_memory(void);
 int adaptive_probability(int user_limit, int cgroup_limit);
+int adaptive_absorpion(int energy_prod, int energy_explode, int energy_val_tot);
 int random_atomic_n(int max, int min);
 void update_waste(int waste);
 int ctrl_sem_getval(int sem_id, int sem_n);
 int ctrl_sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags);
 double max3(double a, double b, double c);
+void handle_sigterm(int sig);
 
 struct stats stats;
 
@@ -61,16 +63,24 @@ int main(int argc, char *argv[]){
 	int atomic_number;
 	int user_limit=get_max_user_processes();
 	int cgroup_limit=read_pids_max();
+	signal(SIGTERM, handle_sigterm);
 	//int min_atomic_n = 24
     //printf("atomo creato.\n");
 	if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
 	}
+	//printf("attach avvenuta\n");
 	//printf("atomo %d ha effettuato attach alla mem condivisa \n", getpid());
-	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 7)==0){
+		//printf("sto per morire\n");
+		close_and_exit();
+	}
 	//printf("semaphore processi atom: %d\n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
+		//printf("to perdormire prima sleep\n");
 		sleep(1);
+		//printf("sono sveglio da prima sleep\n");
 	}
 	int min_atomic_n = shm_info_get_min_n_atoms(stats.info);
 	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
@@ -78,19 +88,20 @@ int main(int argc, char *argv[]){
     atomic_number=random_atomic_n(max_atomic_n,min_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
 	//printf("numero atomico = %d \n", atomic_number);
 	int i=0;
-		sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
+		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 		//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 	int split_prob;
 	
     //printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
 	while (ctrl_sem_getval(shm_sem_get_startid(stats.info), 7)>0){
+		printf("voglio ricevere messaggi\n");
 		//printf("ancora vivo.\n");
 		if(rcv_msg(atomic_number)){//ricezzione di un messaggio gli dice di fare scissione
 			while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 8)==0){
 			}
-				sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
+				ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
 				shm_info_set_n_activation_tot(stats.info, 1);//aumento attivazioni in MUTUA ESCLUSIONE
-				sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
+				ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
 			
 			if(atomic_number > min_atomic_n){
 				//printf("%d \n", ctrl_sem_getval(shm_sem_get_startid(stats.info), 6));
@@ -119,7 +130,9 @@ int main(int argc, char *argv[]){
 				close_and_exit();
 			}
 		}else{
+			printf("sto per dormire sllep 2\n");
 			sleep(1);
+			printf("mi sono svegliaot sleep 2\n");
 		}
 	}
 	close_and_exit();
@@ -152,13 +165,13 @@ int split(int atomic_n, int if_waste){//crea atomo figlio + setta il numero atom
     	}
 		read(p_c_pipe[0], &atomic_n, sizeof(int));
 
-			sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
+			ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 
 			while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 9)==0){
 			}
-				sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
+				ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
 				shm_info_set_n_split_tot(stats.info, 1);//aumento attivazioni in MUTUA ESCLUSIONE
-				sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
+				ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
 
 			//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 
@@ -343,6 +356,18 @@ int adaptive_probability(int user_limit, int cgroup_limit) {
 	}
 }
 
+int adaptive_absorpion(int energy_prod, int energy_explode, int energy_val_tot){
+	double percentage=energy_val_tot/energy_explode;	
+	if(percentage<0.5){
+		return (int)(energy_prod*0.5);
+	}else if(percentage<0.8){
+		return (int)(energy_prod*0.2);
+	}else {
+		return 0;
+	}
+//return 0;
+}
+
 double max3(double a, double b, double c) {
     if (a >= b && a >= c) {
         return a;
@@ -370,31 +395,38 @@ struct  atom_n_parent_child atomic_n_to_split(int atomic_n){//splitto sempre per
 void update_waste(int waste){// aggiorna le scorie in mem condivisa
 	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 5)==0){
 	}
-	sem_execute_semop(shm_sem_get_startid(stats.info), 5, -1, 0);
+	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 5, -1, 0);
 	waste = waste+ shm_info_get_waste_tot(stats.info);
 	shm_info_set_waste_tot(stats.info, waste);         //aggiorna mem condivisa in mutua escl
-	sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
+	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
 }   
 
 void update_energy(struct  atom_n_parent_child p_c){
-	int energy_val;
+	int energy_val_tot, energy_val;
+	int explode=(shm_info_get_energy_explode_trashold(stats.info));
 	energy_val=energy(p_c);
 	while((ctrl_sem_getval(shm_sem_get_startid(stats.info), 3)==0) && ctrl_sem_getval(shm_sem_get_startid(stats.info), 4)==0){
 	}
-	sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
-	sem_execute_semop(shm_sem_get_startid(stats.info), 4, -1, 0);
-	energy_val=energy_val+shm_info_get_energy_prod_tot(stats.info);
-	int explode;
-	if(energy_val > (explode=(shm_info_get_energy_explode_trashold(stats.info)))){
-		printf("EXPLODE - EXPLODE - EXPLODE l'energia totale al netto di quella consumata dal master: %d è maggiore del parametro massimo %d\n",energy_val , explode);
+	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
+	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 4, -1, 0);
+	energy_val_tot=shm_info_get_energy_prod_tot(stats.info);
+	if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 6)==1){
+		energy_val=adaptive_absorpion(energy_val, explode, energy_val_tot);
+	}
+	energy_val_tot=energy_val+shm_info_get_energy_prod_tot(stats.info);
+	if(energy_val_tot > explode){
+		printf("EXPLODE - EXPLODE - EXPLODE energia totale prodotta da atom al netto di quella consumata dal master: %d è maggiore del parametro massimo %d\n",energy_val_tot , explode);
 		//bloccare l'esecuzione
+		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
+		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else{
-		shm_info_set_energy_prod(stats.info, energy(p_c));
-		shm_info_set_energy_prod_tot(stats.info, energy_val);         //aggiorna mem condivisa in mutua escl
-		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
-		sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
+		printf("energaia prodotta %d, energia prodotta dopo inibizione %d", energy(p_c), energy_val);
+		shm_info_set_energy_prod(stats.info, energy_val);
+		shm_info_set_energy_prod_tot(stats.info, energy_val_tot);         //aggiorna mem condivisa in mutua escl
+		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
+		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
 	}
 }
 
@@ -456,14 +488,20 @@ int ctrl_sem_getval(int sem_id, int sem_n){
 int ctrl_sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags){
 	int res;
 	if((res=sem_execute_semop(sem_id, sem_index, op_val, flags))<0){
-		exit(-1); // se fallisce la execute semop allora la mem cond o i semafori sono andati, quindi inutile fare close_and_exit
+		exit(-1); // se fallisce la execute semop allora la mem cond o i semafori sono andati, quindi inutile fare close_and_exit che usa appunto semafori e mem condivisa
 	}
 	return res;
 }
 
+void handle_sigterm(int sig) {
+    // Pulizia risorse prima di terminare
+    //printf("Processo figlio terminato (PID: %d attraverso segnale)\n", getpid());
+    close_and_exit();  // Terminazione pulita
+}
+
 void close_and_exit(){
-	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
-	sem_execute_semop(shm_sem_get_startid(stats.info), 0, -1, 0);
+	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
+	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 0, -1, 0);
 	//msg_queue_remove(stats.info); //la creazione eS la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
 	shm_info_detach(stats.info);
 

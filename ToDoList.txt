@@ -1,5 +1,31 @@
-NON RICORDO SE AVEVO AGGIUSTATO semaphore.c - sem_getval: Failed to get semaphore value
+sembra che gli accessi alla mem condivisa da parte degli atomi non avvengano in modo cronologico 
+facendo si che quantità alte di energia liberate quando si era lontani da explode vengano scritte in memoria
+quando si è piu vicini a explode 
+
+EXPLODE da atom non fa terminare l'esecuzione correttamante, gli atomi rimangono in vita
++ master non si chiude quindi si è costretti a fare makekillall-kill per uccidere tutti i processi
+dell esecuzione ma rimangono ettive le risorse ipc che devono essere rimosse con make clean se no alla prossima
+esecuzione darà errore del semaforo 
+Risolto: praticamente explode avviene dentro una sezione ad esecuzione atomica di atom e non rimettevo i semafori
+a valori di semaforo libero cosi che tutti gli atomi che aspettavano su quel semaforo rimanevano sempre li ad aspettare
+
+aggiungere le stampe delle operazioni del'inibiotre e 
+
+"AGGIUSTATO" semaphore.c - sem_getval: Failed to get semaphore value
 gestire l'uscita dal processo nel caso non si trova la mem condivisa/ semaforo
+Grazie all'errore in explode ho capito n po... adesso nel migliore dei casi master e gli atomi terminano correttamente
+Nel peggiore dei casi rimangono comunque dei processi attivi ma senza errori, rimangono stranamente in Sleep, notabile
+scrivendo ps aux nel terminale e i processi ./atom sono in stato S+ (che sarebbe sleep)
+- scavando nei meandri ho capito che praticamente finiscono le risore per fare fork, allora i processi gia creati terminano
+correttamente diventando zombie. gli zombie occupano comunque spazio nella tabella dei processi facendo si che gli altri processi che si devono creare
+con fork non possono. l'unico modo per liberare gli zombie è di fare una wait() o waitpid() che aspettano la terminazione
+dei figli conoscendo il loro pid e quindi puliscono gli zombie, oppure terminiamo il padre, cosi gli zombie vengono adottati
+da init che li gestirà al meglio(li toglie di mezzo)
+-noi non ci salviamo i pid dei figli quindi mi sembra piu logico terminare il padre quando i figli smettono di terminare da soli
+cosi gli zombie se ne vanno e gli altri procesi in sleep perche non possono crearsi, finalmente si tolgono di mezzo da soli nel modo giusto
+-penso che sia la sola soluzione perche ho anche provato a inviare segnali ai processi in sleep ma non li ricevono quindi ho 
+pensato che non sono nemmeno stati inizializzati anche perche poi nelle stampe del terminale mi usciva scritto un errore sh: 1: Cannot fork
+quindi sembra che i processi volevano an cora forkarsi? ma io che ne so. poi bho è solo un mio pensiero.
 
 magari aggiungere anche dei limiti sulla quantità di atomi creabili come atomi iniziali  perche se 
 inizializzo l'esecuzione con un numero troppo alto di atomi , che supera gia i limiti di sistema, es quelli

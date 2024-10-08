@@ -47,6 +47,8 @@ void signal_handler(int signal);
 
 void set_signal_handler(void);
 
+void term_childs(const char *process_name);
+
 void close_and_exit(void);
 
 void periodic_print(void);
@@ -180,6 +182,7 @@ pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasf
 		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in master: prova a inizializzare l'esecuzione con meno atomi modificando il file confic_param.txt\n");
 		//blocco esecuzione
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0); //allora semaforo simulazione a 1 cosi i processi che si sono creati almeno hanno la possibilità 
 		close_and_exit();
 		return -1;
 	} else if (process_pid == 0) { // se figlio
@@ -327,7 +330,7 @@ void set_signal_handler(void){
 int shm_sem_ready(){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
 	int num_process = shm_info_get_n_atoms_init(stats.info)+2;
 	while (sem_getval(shm_sem_get_startid(stats.info), 0) < num_process) {
-		//printf("semaphore processi atom stampati da shm ogni secondo: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+		printf("semaphore processi stampati da shm ogni secondo: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 		sleep(1);
     }
 	return 0;
@@ -349,10 +352,33 @@ void exit_n_sec(int n_seconds){
     printf("Questa riga non verrà mai stampata.\n");
 }
 
+void term_childs(const char *process_name) {
+    char command[256];
+    snprintf(command, sizeof(command), "killall %s", process_name);
+    system(command);  // Esegue il comando killall per terminare i processi con nome process_name
+}
+
 void close_and_exit(){
+	int process_remaining, new_process_remaining, count_exit;
+	process_remaining=0;
+	count_exit=0;
 	while(sem_getval(shm_sem_get_startid(stats.info), 0)>0)
-	{//printf("atomi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+	{
+		new_process_remaining=sem_getval(shm_sem_get_startid(stats.info),0);
+		printf("processi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+		if (process_remaining==new_process_remaining){
+			printf("%d \n", count_exit);
+			count_exit=count_exit+1;
+		}
+		process_remaining=new_process_remaining;
+		if (count_exit >=5){
+			//term_childs("atom"); // lo commento tanto non ha fatto nessun effetto
+
+			break;// l'unica cosa che funziona è uscire dal ciclo, pulire le risorse e i figli rimanenti, se ce ne sono,  si eliminano da soli se non ci sono le risorse 
+		}
 		sleep(1);
+		 
+		
 	}
 	msg_queue_remove(stats.info); //la creazione e la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
 	//shm_info_detach(stats.info);//funziona ma non bisogna fargliela fare al master perche la delete deve essere effettuata dal master e la delete funziona solo se fatta da un processo attaccato
