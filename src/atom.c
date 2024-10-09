@@ -94,7 +94,7 @@ int main(int argc, char *argv[]){
 	
     //printf("atomo ha ricevuto num atomico che è %d.\n", atomic_number);
 	while (ctrl_sem_getval(shm_sem_get_startid(stats.info), 7)>0){
-		printf("voglio ricevere messaggi\n");
+		//printf("voglio ricevere messaggi\n");
 		//printf("ancora vivo.\n");
 		if(rcv_msg(atomic_number)){//ricezzione di un messaggio gli dice di fare scissione
 			while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 8)==0){
@@ -130,9 +130,9 @@ int main(int argc, char *argv[]){
 				close_and_exit();
 			}
 		}else{
-			printf("sto per dormire sllep 2\n");
+			//printf("sto per dormire sllep 2\n");
 			sleep(1);
-			printf("mi sono svegliaot sleep 2\n");
+			//printf("mi sono svegliaot sleep 2\n");
 		}
 	}
 	close_and_exit();
@@ -358,10 +358,10 @@ int adaptive_probability(int user_limit, int cgroup_limit) {
 
 int adaptive_absorpion(int energy_prod, int energy_explode, int energy_val_tot){
 	double percentage=energy_val_tot/energy_explode;	
-	if(percentage<0.5){
+	if(percentage<0.125){
 		return (int)(energy_prod*0.5);
-	}else if(percentage<0.8){
-		return (int)(energy_prod*0.2);
+	}else if(percentage<0.2){
+		return (int)(energy_prod*0.05);
 	}else {
 		return 0;
 	}
@@ -402,31 +402,44 @@ void update_waste(int waste){// aggiorna le scorie in mem condivisa
 }   
 
 void update_energy(struct  atom_n_parent_child p_c){
-	int energy_val_tot, energy_val;
+	int energy_val_tot, energy_val, energy_to_consume, inhibitor, energy_inhibited, temp;
 	int explode=(shm_info_get_energy_explode_trashold(stats.info));
 	energy_val=energy(p_c);
+	energy_to_consume=shm_info_get_energy_demand(stats.info);
+	inhibitor=ctrl_sem_getval(shm_sem_get_startid(stats.info), 6);
+	
 	while((ctrl_sem_getval(shm_sem_get_startid(stats.info), 3)==0) && ctrl_sem_getval(shm_sem_get_startid(stats.info), 4)==0){
 	}
 	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
 	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 4, -1, 0);
 	energy_val_tot=shm_info_get_energy_prod_tot(stats.info);
-	if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 6)==1){
-		energy_val=adaptive_absorpion(energy_val, explode, energy_val_tot);
+	if(inhibitor==1){
+		if(energy_val_tot<energy_to_consume){
+			temp=energy_to_consume - energy_val_tot;
+			if(energy_inhibited=(energy_val-temp)>=0){
+				energy_val=energy_val-energy_inhibited;
+			}else{
+				energy_inhibited=0;
+			}
+		}else if(energy_val_tot>=energy_to_consume){
+			energy_inhibited=energy_val;
+			energy_val=0;
+		}
 	}
-	energy_val_tot=energy_val+shm_info_get_energy_prod_tot(stats.info);
+	energy_val_tot=energy_val+energy_val_tot;
 	if(energy_val_tot > explode){
-		printf("EXPLODE - EXPLODE - EXPLODE energia totale prodotta da atom al netto di quella consumata dal master: %d è maggiore del parametro massimo %d\n",energy_val_tot , explode);
+		printf("EXPLODE - EXPLODE - EXPLODE energia totale prodotta da atom al netto di quella consumata dal master %d è maggiore del parametro massimo %d\n",energy_val_tot , explode);
 		//bloccare l'esecuzione
 		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else{
-		printf("energaia prodotta %d, energia prodotta dopo inibizione %d", energy(p_c), energy_val);
 		shm_info_set_energy_prod(stats.info, energy_val);
 		shm_info_set_energy_prod_tot(stats.info, energy_val_tot);         //aggiorna mem condivisa in mutua escl
 		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
+		printf("energaia prodotta %d, energia prodotta dopo inibizione %d", energy(p_c), energy_val);
 	}
 }
 

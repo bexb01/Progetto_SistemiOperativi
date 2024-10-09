@@ -203,21 +203,25 @@ pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasf
 }
 
 void take_energy(){ 	// preleva energy demand
+	int energy_demand=shm_info_get_energy_demand(stats.info);
+	int energy_now=0;
+	int energ =0;
+	int explode;
 	while(sem_getval(shm_sem_get_startid(stats.info), 3)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
-	int energy_demand=shm_info_get_energy_demand(stats.info);
-	int energy_now=shm_info_get_energy_prod_tot(stats.info);
-	int energ = energy_now - energy_demand;
-	int explode;
+	energy_now=shm_info_get_energy_prod_tot(stats.info);
+	energ = energy_now - energy_demand;
 	if(energ > (explode=(shm_info_get_energy_explode_trashold(stats.info)))){
-		printf("EXPLODE - EXPLODE - EXPLODE l'energia totale al netto di quella consumata dal master: %d è maggiore del parametro massimo %d\n",energ , explode);
+		printf("EXPLODE - EXPLODE - EXPLODE l'energia totale al netto di quella consumata dal master. %d è maggiore del parametro massimo %d\n",energ , explode);
 		//bloccare l'esecuzione
+		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else if(energy_demand > energy_now){
 		printf("BLACKOUT - BLACKOUT - BLACKOUT l'energia consumata dal master: %d è maggiore dell'energia totale %d\n",energy_demand , energy_now);
 		//bloccare l'esecuzione
+		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else{

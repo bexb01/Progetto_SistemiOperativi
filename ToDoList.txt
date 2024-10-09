@@ -1,3 +1,5 @@
+aggiungere stampe di qunta energia assorbe inibitore e quante scissioni/operazioni fa
+
 sembra che gli accessi alla mem condivisa da parte degli atomi non avvengano in modo cronologico 
 facendo si che quantità alte di energia liberate quando si era lontani da explode vengano scritte in memoria
 quando si è piu vicini a explode 

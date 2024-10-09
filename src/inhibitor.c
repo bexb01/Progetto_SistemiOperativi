@@ -52,6 +52,7 @@ int main(int argc, char *argv[]){
 	if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
 	}
+	sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo valore quando lo disaattivimo
 
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	//sem_execute_semop(shm_sem_get_startid(stats.info), 10, -1, 0);
@@ -63,7 +64,6 @@ int main(int argc, char *argv[]){
 		sleep(1);
 	}
 
-	sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo valore quando lo disaattivimo
 
 	while(sem_getval(shm_sem_get_startid(stats.info), 7)!=0){
 		// Verifica se il processo è in esecuzione o fermo

@@ -119,15 +119,15 @@ void shm_sem_init(shm_info_t *inf){// cera i semafori
 	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore 1 start 0 stay
 	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
 
-	sem_setval(inf->sem_start_id, 3, 1);    // energy_prod_tot sem 
-	sem_setval(inf->sem_start_id, 4, 1);    // energy_prod_ e last sec sem
-	sem_setval(inf->sem_start_id, 5, 1);    // waste_tot
+	sem_setval(inf->sem_start_id, 3, 1);    // controlla accesso a energy_prod_tot 
+	sem_setval(inf->sem_start_id, 4, 1);    // controlla accesso a energy_prod_ energy_prod_last_sec
+	sem_setval(inf->sem_start_id, 5, 1);    // controlla accesso a waste_tot waste_tot_last_sec
 	sem_setval(inf->sem_start_id, 6, 0);    // inhibitor
 
-	sem_setval(inf->sem_start_id, 7, 1);    // end simulation sem 1 running 0 shutdown
+	sem_setval(inf->sem_start_id, 7, 1);    // end simulation sem: 1 running 0 shutdown
 
-	sem_setval(inf->sem_start_id, 8, 1);    // n_activation_tot
-	sem_setval(inf->sem_start_id, 9, 1);    // n_split_tot
+	sem_setval(inf->sem_start_id, 8, 1);    // controlla accesso a n_activation_tot activation_last_sec
+	sem_setval(inf->sem_start_id, 9, 1);    // controlla accesso a n_split_tot split_last_sec
 	//sem_setval(inf->sem_start_id, 10, 0);	// process semaphore incrementato dal master e decrementato dai processi creati dal master
 
 
