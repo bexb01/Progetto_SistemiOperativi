@@ -110,10 +110,20 @@ int main(int argc, char *argv[]){
 					split_prob=adaptive_probability(user_limit, cgroup_limit);
 					if(split_prob ==  -1){ //-1 blocco tutto, 1 splittowaste o blocco, 0 splitto
 						//non faccio niente=blocco lo split
+						while(sem_getval(shm_sem_get_startid(stats.info), 11)==0){
+						}
+						sem_execute_semop(shm_sem_get_startid(stats.info), 11, -1, 0);
+						shm_info_set_n_split_blocked((stats.info), 1);
+						sem_execute_semop(shm_sem_get_startid(stats.info), 11, 1, 0);
 					}else if(split_prob ==  1){
 						split_prob=adaptive_probability(user_limit, cgroup_limit); //riuso la funzione di probabilità 
 						if((split_prob == 1) || (split_prob == -1)){ //probabilità del secondo caso//split con waste o non split
 							//blocchiamo split
+							while(sem_getval(shm_sem_get_startid(stats.info), 11)==0){
+							}
+							sem_execute_semop(shm_sem_get_startid(stats.info), 11, -1, 0);
+							shm_info_set_n_split_blocked((stats.info), 1);
+							sem_execute_semop(shm_sem_get_startid(stats.info), 11, 1, 0);
 						}else if(split_prob == 0){
 							atomic_number=split(atomic_number, 1); //splittiamo con waste
 						}
@@ -183,6 +193,11 @@ int split(int atomic_n, int if_waste){//crea atomo figlio + setta il numero atom
     	}
 		if(if_waste==1){
 			update_waste(1);
+			while(sem_getval(shm_sem_get_startid(stats.info), 12)==0){
+							}
+							sem_execute_semop(shm_sem_get_startid(stats.info), 12, -1, 0);
+							shm_info_set_n_waste_after_split((stats.info), 1);
+							sem_execute_semop(shm_sem_get_startid(stats.info), 12, 1, 0);
 			close_and_exit();
 		}
 		return atomic_n;
@@ -439,7 +454,12 @@ void update_energy(struct  atom_n_parent_child p_c){
 		shm_info_set_energy_prod_tot(stats.info, energy_val_tot);         //aggiorna mem condivisa in mutua escl
 		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
-		printf("energaia prodotta %d, energia prodotta dopo inibizione %d", energy(p_c), energy_val);
+		//printf("energaia prodotta %d, energia prodotta dopo inibizione %d", energy(p_c), energy_val);
+		while(sem_getval(shm_sem_get_startid(stats.info), 10)==0){
+		}
+		sem_execute_semop(shm_sem_get_startid(stats.info), 10, -1, 0);
+		shm_info_set_energy_inhibitor((stats.info), energy_inhibited);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 10, 1, 0);
 	}
 }
 

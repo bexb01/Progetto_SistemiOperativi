@@ -40,6 +40,10 @@ void shm_info_set_n_split_tot(shm_info_t *inf, int n_split);
 void shm_info_set_n_split_last_sec(shm_info_t *inf, int split_last_sec);
 void shm_info_set_energy_cons_tot(shm_info_t *inf, int energy_cons);
 void shm_info_set_energy_cons_last_sec(shm_info_t *inf, int energy_cons_sec);
+void shm_info_set_n_waste_after_split(shm_info_t *inf, int waste);
+void shm_info_set_n_split_blocked(shm_info_t *inf, int split_blocked);
+void shm_info_set_energy_inhibitor(shm_info_t *inf, int energy_absorbed);
+
 
 int msg_q_a_a_id_get(shm_info_t *inf);
 int shm_id_get(shm_info_t *inf);
@@ -66,5 +70,8 @@ int shm_info_get_n_split_tot(shm_info_t *inf);
 int shm_info_get_n_split_last_sec(shm_info_t *inf);
 int shm_info_get_energy_cons_tot(shm_info_t *inf);
 int shm_info_get_energy_cons_last_sec(shm_info_t *inf);
+int shm_info_get_n_waste_after_split(shm_info_t *inf);
+int shm_info_get_n_split_blocked(shm_info_t *inf);
+int shm_info_get_energy_inhibitor(shm_info_t *inf);
 
 #endif

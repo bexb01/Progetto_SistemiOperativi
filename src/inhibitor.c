@@ -26,20 +26,10 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 };
 
 void close_and_exit();
+void handle_sigusr1(int sig);
+void handle_sigusr2(int sig);
 
 struct stats stats;
-
-
-
-void handle_sigusr1(int sig) {
-    printf("Processo inibitore fermato (SIGUSR1 ricevuto)...\n");
-    sem_execute_semop(shm_sem_get_startid(stats.info), 6, -1, 0);   // Imposta su -1 per fermare il ciclo
-}
-
-void handle_sigusr2(int sig) {
-    printf("Processo inibitore ripreso (SIGUSR2 ricevuto)...\n");
-    sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0) ;  // Imposta  su 1 per riprendere il ciclo
-}
 
 int main(int argc, char *argv[]){
     printf("CIAO SONO L'INIBITOREEEEEEEEEEEEEEEEEEEEEE\n");
@@ -74,6 +64,16 @@ int main(int argc, char *argv[]){
         sleep(1);
 	}
 	close_and_exit();
+}
+
+void handle_sigusr1(int sig) {
+    printf("Processo inibitore fermato (SIGUSR1 ricevuto)...\n");
+    sem_execute_semop(shm_sem_get_startid(stats.info), 6, -1, 0);   // Imposta su -1 per fermare il ciclo
+}
+
+void handle_sigusr2(int sig) {
+    printf("Processo inibitore ripreso (SIGUSR2 ricevuto)...\n");
+    sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0) ;  // Imposta  su 1 per riprendere il ciclo
 }
 
 void close_and_exit(){

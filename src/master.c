@@ -25,6 +25,8 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 					  //shm_info_t 
 };
 
+int inhibitor_created=0;
+
 //prototipazione/ dichiarazione anticipata delle funzioni
 
 void init_atoms(void);
@@ -73,7 +75,7 @@ int main(int argc, char *argv[]){
 	init_alimentation();
 	init_activator();
 	terminal_inhibitor();
-	printf("Attesa che tutti i processi figli vengano creati...\n");
+	printf("Attesa c90he tutti i processi figli vengano creati...\n");
 	if(shm_sem_ready(stats.info)!= 0){// fino a quando semaforo non è ready aspettiamo
 		//printf("attendo creazione figli\n");
 		
@@ -83,25 +85,23 @@ int main(int argc, char *argv[]){
 	printf("processi totali: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	//printf("figli creati con successo\n");
 
-
-	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0); //allora semaforo simulazione a 1
-	printf("simulazione avviata\n");
-
-	
-	//close_and_exit();
-	//exit_n_sec(n_sec);
-
-	//alarm(1);
 	shm_info_set_n_activation_last_sec(stats.info, 0);
 	shm_info_set_n_split_last_sec(stats.info, 0);
 	shm_info_set_energy_prod_laste_sec(stats.info, 0);
 	shm_info_set_energy_cons_last_sec(stats.info, 0);
 	shm_info_set_waste_last_sec(stats.info, 0);  
+	shm_info_set_n_waste_after_split(stats.info, 0);
+	shm_info_set_n_split_blocked(stats.info, 0);
+	shm_info_set_energy_inhibitor(stats.info, 0);
+
+	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0); //allora semaforo simulazione a 1
+	printf("simulazione avviata\n");
 
 	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0) {
 
 		if(shm_info_get_sim_duration(stats.info)<=0){
 			printf("TIME OUT TIME OUT TIMEOUT TIME OUT TIMEOUT\n");
+			printf("stampa finale \n");
 			periodic_print();
 			sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 			close_and_exit();
@@ -160,6 +160,7 @@ void terminal_inhibitor(void){
         response[strcspn(response, "\n")] = 0; // Rimuovi il carattere di nuova linea (newline) alla fine dell'input
         if (strcmp(response, "s") == 0 || strcmp(response, "S") == 0) {
             init_inhibitor();
+			inhibitor_created=1;
 			printf("Inibitore avviato.\n");
         } else if (strcmp(response, "n") == 0 || strcmp(response, "N") == 0) {
             printf("Inibitore non avviato.\n");
@@ -313,6 +314,29 @@ void periodic_print(void){
 	print=print-shm_info_get_energy_cons_last_sec(stats.info);
 	printf("energia consumata ultimo secondo  = %d\n", print );
 	shm_info_set_energy_cons_last_sec(stats.info, temp);
+
+	if(inhibitor_created==1){
+		while(sem_getval(shm_sem_get_startid(stats.info), 10)==0){
+		}
+		sem_execute_semop(shm_sem_get_startid(stats.info), 10, -1, 0);
+		print=shm_info_get_energy_inhibitor(stats.info);
+		printf("quantità di energia assorbita dal processo inhibitor: %d \n" , print);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 10, 1, 0);
+
+		while(sem_getval(shm_sem_get_startid(stats.info), 11)==0){
+		}
+		sem_execute_semop(shm_sem_get_startid(stats.info), 11, -1, 0);
+		print=shm_info_get_n_split_blocked(stats.info);
+		printf("numero di scissioni bloccate dal processo inhibitor: %d \n" , print);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 11, 1, 0);
+
+		while(sem_getval(shm_sem_get_startid(stats.info), 12)==0){
+		}
+		sem_execute_semop(shm_sem_get_startid(stats.info), 12, -1, 0);
+		print=shm_info_get_n_waste_after_split(stats.info);
+		printf("waste creata dal processo inhibitor dopo le scissioni: %d \n" , print);
+		sem_execute_semop(shm_sem_get_startid(stats.info), 12, 1, 0);
+	}
 }
 
 void set_signal_handler(void){

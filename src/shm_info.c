@@ -13,7 +13,7 @@
 struct shm_inf{
 	int energy_demand, n_atoms_init, n_atom_max, min_n_atoms, n_new_atoms, sim_duration, energy_explode_trashold, step_attivatore;
 	int n_activation_tot, n_activation_last_sec, n_split_tot, n_split_last_sec, energy_prod_tot, energy_prod_laste_sec, energy_prod,
-		energy_cons_tot, energy_cons_last_sec, waste_tot, waste_last_sec;
+		energy_cons_tot, energy_cons_last_sec, waste_tot, waste_last_sec, energy_inhibitor, n_split_blocked, n_waste_after_split;
 	long step;
 	int shm_info_id;
 	int msg_q_atom_activator_id;
@@ -114,7 +114,7 @@ void shm_info_delete(shm_info_t *inf){
 
 void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
-	inf->sem_start_id = sem_create(SEM_ID_READY, 10);
+	inf->sem_start_id = sem_create(SEM_ID_READY, 15);
 	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore conta i processi attivi
 	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore 1 start 0 stay
 	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
@@ -128,7 +128,9 @@ void shm_sem_init(shm_info_t *inf){// cera i semafori
 
 	sem_setval(inf->sem_start_id, 8, 1);    // controlla accesso a n_activation_tot activation_last_sec
 	sem_setval(inf->sem_start_id, 9, 1);    // controlla accesso a n_split_tot split_last_sec
-	//sem_setval(inf->sem_start_id, 10, 0);	// process semaphore incrementato dal master e decrementato dai processi creati dal master
+	sem_setval(inf->sem_start_id, 10, 1);	// controlla accesso a energy_inhibitor
+	sem_setval(inf->sem_start_id, 11, 1);	// controlla accesso a n_split_blocked
+	sem_setval(inf->sem_start_id, 12, 1);	// controlla accesso a n_waste_after_split
 
 
 }
@@ -168,6 +170,9 @@ void shm_info_set_n_split_tot(shm_info_t *inf, int n_split){inf->n_split_tot=inf
 void shm_info_set_n_split_last_sec(shm_info_t *inf, int split_last_sec){inf->n_split_last_sec=split_last_sec;}
 void shm_info_set_energy_cons_tot(shm_info_t *inf, int energy_cons){inf->energy_cons_tot=inf->energy_cons_tot+energy_cons;}
 void shm_info_set_energy_cons_last_sec(shm_info_t *inf, int energy_cons_sec){inf->energy_cons_last_sec=energy_cons_sec;}
+void shm_info_set_n_waste_after_split(shm_info_t *inf, int waste){inf->n_waste_after_split=inf->n_waste_after_split+waste;}
+void shm_info_set_n_split_blocked(shm_info_t *inf, int split_blocked){inf->n_split_blocked=inf->n_split_blocked+split_blocked;}
+void shm_info_set_energy_inhibitor(shm_info_t *inf, int energy_absorbed){inf->energy_inhibitor=inf->energy_inhibitor+energy_absorbed;}
 
 //getters
 //void shm_info_get_id(shm_info_t +inf)
@@ -197,3 +202,6 @@ int shm_info_get_n_split_tot(shm_info_t *inf){return inf->n_split_tot;}
 int shm_info_get_n_split_last_sec(shm_info_t *inf){return inf->n_split_last_sec;}
 int shm_info_get_energy_cons_tot(shm_info_t *inf){return inf->energy_cons_tot;}
 int shm_info_get_energy_cons_last_sec(shm_info_t *inf){return inf->energy_cons_last_sec;}
+int shm_info_get_n_waste_after_split(shm_info_t *inf){return inf->n_waste_after_split;}
+int shm_info_get_n_split_blocked(shm_info_t *inf){return inf->n_split_blocked;}
+int shm_info_get_energy_inhibitor(shm_info_t *inf){return inf->energy_inhibitor;}
