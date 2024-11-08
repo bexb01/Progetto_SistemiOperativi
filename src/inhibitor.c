@@ -32,7 +32,7 @@ void handle_sigusr2(int sig);
 struct stats stats;
 
 int main(int argc, char *argv[]){
-    printf("CIAO SONO L'INIBITOREEEEEEEEEEEEEEEEEEEEEE\n");
+    //printf("CIAO SONO L'INIBITOREEEEEEEEEEEEEEEEEEEEEE\n");
 
 	// Associa i gestori dei segnali per fermare e riprendere
     signal(SIGUSR1, handle_sigusr1);  // SIGUSR1 per fermare
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
 	if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
 	}
-	sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo valore quando lo disaattivimo
+	sem_setval(shm_sem_get_startid(stats.info), 6, 1); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo valore quando lo disaattivimo
 
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	//sem_execute_semop(shm_sem_get_startid(stats.info), 10, -1, 0);

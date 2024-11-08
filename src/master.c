@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
 	init_alimentation();
 	init_activator();
 	terminal_inhibitor();
-	printf("Attesa c90he tutti i processi figli vengano creati...\n");
+	printf("Attesa che tutti i processi figli vengano creati...\n");
 	if(shm_sem_ready(stats.info)!= 0){// fino a quando semaforo non è ready aspettiamo
 		//printf("attendo creazione figli\n");
 		
@@ -159,6 +159,7 @@ void terminal_inhibitor(void){
     if (fgets(response, sizeof(response), stdin) != NULL) {
         response[strcspn(response, "\n")] = 0; // Rimuovi il carattere di nuova linea (newline) alla fine dell'input
         if (strcmp(response, "s") == 0 || strcmp(response, "S") == 0) {
+			sem_setval(shm_sem_get_startid(stats.info), 6, 1);
             init_inhibitor();
 			inhibitor_created=1;
 			printf("Inibitore avviato.\n");
@@ -315,6 +316,9 @@ void periodic_print(void){
 	printf("energia consumata ultimo secondo  = %d\n", print );
 	shm_info_set_energy_cons_last_sec(stats.info, temp);
 
+	printf("processi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+	printf("atomi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+
 	if(inhibitor_created==1){
 		while(sem_getval(shm_sem_get_startid(stats.info), 10)==0){
 		}
@@ -357,6 +361,10 @@ void set_signal_handler(void){
 
 int shm_sem_ready(){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
 	int num_process = shm_info_get_n_atoms_init(stats.info)+2;
+	//se inibitore attivato allora 
+	if(sem_getval(shm_sem_get_startid(stats.info), 6)==0){
+		num_process= num_process+1;
+	}
 	while (sem_getval(shm_sem_get_startid(stats.info), 0) < num_process) {
 		printf("semaphore processi stampati da shm ogni secondo: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 		sleep(1);
