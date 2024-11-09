@@ -362,7 +362,7 @@ void set_signal_handler(void){
 int shm_sem_ready(){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
 	int num_process = shm_info_get_n_atoms_init(stats.info)+2;
 	//se inibitore attivato allora 
-	if(sem_getval(shm_sem_get_startid(stats.info), 6)==0){
+	if(sem_getval(shm_sem_get_startid(stats.info), 6)==1){
 		num_process= num_process+1;
 	}
 	while (sem_getval(shm_sem_get_startid(stats.info), 0) < num_process) {
@@ -398,10 +398,10 @@ void close_and_exit(){
 	int process_remaining, new_process_remaining, count_exit;
 	process_remaining=0;
 	count_exit=0;
-	while(sem_getval(shm_sem_get_startid(stats.info), 0)>0)
+	while(sem_getval(shm_sem_get_startid(stats.info), 2)>0)
 	{
-		new_process_remaining=sem_getval(shm_sem_get_startid(stats.info),0);
-		printf("processi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
+		new_process_remaining=sem_getval(shm_sem_get_startid(stats.info),2);
+		printf("atomi rimanenti sem 2 %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 		if (process_remaining==new_process_remaining){
 			printf("%d \n", count_exit);
 			count_exit=count_exit+1;

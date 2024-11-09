@@ -115,9 +115,9 @@ void shm_info_delete(shm_info_t *inf){
 void shm_sem_init(shm_info_t *inf){// cera i semafori 
 	/* Semaphores */
 	inf->sem_start_id = sem_create(SEM_ID_READY, 15);
-	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore conta i processi attivi
-	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore 1 start 0 stay
-	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi semaphore
+	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore conta i processi per far iniziare l'esecuzione
+	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore :1 start; 0 stay
+	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi conta tutti i processi attualemnte in esecuzione, serve per la terminazione del master
 
 	sem_setval(inf->sem_start_id, 3, 1);    // controlla accesso a energy_prod_tot 
 	sem_setval(inf->sem_start_id, 4, 1);    // controlla accesso a energy_prod_ energy_prod_last_sec
