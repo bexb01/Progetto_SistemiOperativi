@@ -45,9 +45,9 @@ void exit_n_sec(int n_seconds);
 
 void take_energy(void);
 
-void signal_handler(int signal);
+void sigchld_handler(int signo);
 
-void set_signal_handler(void);
+void set_sigchld_handler(void);
 
 void term_childs(const char *process_name);
 
@@ -61,7 +61,7 @@ struct stats stats;//creo una variabile di tipo struct statistics chiamata stats
 
 int main(int argc, char *argv[]){
 
-	
+	signal(SIGCHLD, SIG_IGN); // ignoriamo i segnali sigchld della terminazione dei procesi figli
 	//shm_info_attach fa sia la get (cioè la creazione del  segmento di mem condivisa) che la attach
 	shm_info_attach(&stats.info);//shm_info_attach richiede un puntatore a puntatore ma noi gli passiamo un indirizzo di un puntatore,
 	                            // questo è possibile perche un punt a punt appunto contiene un indirizzo di un puntatore, quindi passare 
@@ -234,32 +234,6 @@ void take_energy(){ 	// preleva energy demand
 	
 }
 
-void signal_handler(int signal){
-	switch (signal) {
-	/*case SIGSEGV:
-		dprintf(2, "master.c: Segmentation fault. Closing all.\n");
-	case SIGTERM:
-	case SIGINT:
-		close_all();*/
-	case SIGALRM:
-		if(sem_getval(shm_sem_get_startid(stats.info), 7)==0){
-			close_and_exit();
-		}else if(shm_info_get_sim_duration(stats.info)==0){
-			printf("STAMPA FINALE, secondi rimanenti: 0\n");
-			periodic_print();
-			sem_setval(shm_sem_get_startid(stats.info), 7, 0);
-			close_and_exit();
-		}else if(shm_info_get_sim_duration(stats.info)>0){
-			alarm(1);
-			shm_info_set_sim_duration(stats.info, shm_info_get_sim_duration(stats.info)-1);
-			printf("TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE %d\n", shm_info_get_sim_duration(stats.info));
-			periodic_print();
-		}
-		break;
-	default:
-		break;
-	}
-}
 
 void periodic_print(void){
 	int print;
@@ -316,8 +290,7 @@ void periodic_print(void){
 	printf("energia consumata ultimo secondo  = %d\n", print );
 	shm_info_set_energy_cons_last_sec(stats.info, temp);
 
-	printf("processi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
-	printf("atomi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+	printf("processi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 
 	if(inhibitor_created==1){
 		while(sem_getval(shm_sem_get_startid(stats.info), 10)==0){
@@ -343,21 +316,6 @@ void periodic_print(void){
 	}
 }
 
-void set_signal_handler(void){
-	static struct sigaction sa;
-	sigset_t mask;
-
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = signal_handler;
-
-	sigfillset(&mask);
-	sa.sa_mask = mask;
-	sigaction(SIGALRM, &sa, NULL);
-	/*sigaction(SIGSEGV, &sa, NULL);
-	sigaction(SIGTERM, &sa, NULL);
-	sigaction(SIGINT, &sa, NULL);
-	*/
-}
 
 int shm_sem_ready(){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
 	int num_process = shm_info_get_n_atoms_init(stats.info)+2;
@@ -398,10 +356,15 @@ void close_and_exit(){
 	int process_remaining, new_process_remaining, count_exit;
 	process_remaining=0;
 	count_exit=0;
+	pid_t inhib_pid;
 	while(sem_getval(shm_sem_get_startid(stats.info), 2)>0)
 	{
+		if(sem_getval(shm_sem_get_startid(stats.info),6)==0){
+			inhib_pid=shm_info_get_inhibitor_pid(stats.info);
+			kill(inhib_pid, SIGUSR2);
+		}
 		new_process_remaining=sem_getval(shm_sem_get_startid(stats.info),2);
-		printf("atomi rimanenti sem 2 %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
+		printf("processi rimanenti sem 2 %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 		if (process_remaining==new_process_remaining){
 			printf("%d \n", count_exit);
 			count_exit=count_exit+1;

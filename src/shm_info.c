@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+
 #include "include/constants.h" 
 #include "include/shm_info.h"
 #include "include/msg_comunication.h"
@@ -18,6 +20,7 @@ struct shm_inf{
 	int shm_info_id;
 	int msg_q_atom_activator_id;
 	int sem_start_id;
+	pid_t inhibitor_pid;
 };
 
 void param_init(char * file_path, shm_info_t *inf){
@@ -122,7 +125,7 @@ void shm_sem_init(shm_info_t *inf){// cera i semafori
 	sem_setval(inf->sem_start_id, 3, 1);    // controlla accesso a energy_prod_tot 
 	sem_setval(inf->sem_start_id, 4, 1);    // controlla accesso a energy_prod_ energy_prod_last_sec
 	sem_setval(inf->sem_start_id, 5, 1);    // controlla accesso a waste_tot waste_tot_last_sec
-	sem_setval(inf->sem_start_id, 6, 0);    // inhibitor
+	sem_setval(inf->sem_start_id, 6, 2);    // inhibitor
 
 	sem_setval(inf->sem_start_id, 7, 1);    // end simulation sem: 1 running 0 shutdown
 
@@ -174,6 +177,7 @@ void shm_info_set_n_waste_after_split(shm_info_t *inf, int waste){inf->n_waste_a
 void shm_info_set_n_split_blocked(shm_info_t *inf, int split_blocked){inf->n_split_blocked=inf->n_split_blocked+split_blocked;}
 void shm_info_set_energy_inhibitor(shm_info_t *inf, int energy_absorbed){inf->energy_inhibitor=inf->energy_inhibitor+energy_absorbed;}
 
+void shm_info_set_inhibitor_pid(shm_info_t *inf, pid_t inhib_pid){inf->inhibitor_pid=inhib_pid;}
 //getters
 //void shm_info_get_id(shm_info_t +inf)
 int msg_q_a_a_id_get(shm_info_t *inf){return inf->msg_q_atom_activator_id;}
@@ -205,3 +209,5 @@ int shm_info_get_energy_cons_last_sec(shm_info_t *inf){return inf->energy_cons_l
 int shm_info_get_n_waste_after_split(shm_info_t *inf){return inf->n_waste_after_split;}
 int shm_info_get_n_split_blocked(shm_info_t *inf){return inf->n_split_blocked;}
 int shm_info_get_energy_inhibitor(shm_info_t *inf){return inf->energy_inhibitor;}
+
+pid_t shm_info_get_inhibitor_pid(shm_info_t *inf){return inf->inhibitor_pid;}

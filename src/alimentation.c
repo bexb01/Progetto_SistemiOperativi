@@ -34,6 +34,7 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
 	long step_nsec;
+	signal(SIGCHLD, SIG_IGN);
 	shm_info_attach(&stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	//printf("semaphore processi alimentation: %d \n", sem_getval(shm_sem_get_startid(stats.info), 0));

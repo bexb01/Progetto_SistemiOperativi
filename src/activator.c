@@ -39,6 +39,7 @@ int main(int argc, char *argv[]){
 	//printf("shm attaccata activator.\n");
 	long step_nsec=shm_info_get_step_attivatore(stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 	//printf("semaphore processi activator: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
 
@@ -83,7 +84,7 @@ void nsleep(long step_nsec){
 }
 
 void close_and_exit(){
-	sem_execute_semop(shm_sem_get_startid(stats.info), 0, -1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
 	//msg_queue_remove(stats.info);
 	shm_info_detach(stats.info);
 

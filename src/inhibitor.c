@@ -42,9 +42,11 @@ int main(int argc, char *argv[]){
 	if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
 	}
+	shm_info_set_inhibitor_pid(stats.info, getpid());
 	sem_setval(shm_sem_get_startid(stats.info), 6, 1); // questo indica che l'inibitore è attivo, quindi bisogn cmbiare il suo valore quando lo disaattivimo
 
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 	//sem_execute_semop(shm_sem_get_startid(stats.info), 10, -1, 0);
 
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
@@ -77,10 +79,10 @@ void handle_sigusr2(int sig) {
 }
 
 void close_and_exit(){
-	sem_execute_semop(shm_sem_get_startid(stats.info), 0, -1, 0);
+	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
 	shm_info_detach(stats.info);
 
-	//printf("terminazione del processo ACTIVATOR.\n");
+	printf("terminazione del processo inhibitor.\n");
 	exit(0);
 
 }
