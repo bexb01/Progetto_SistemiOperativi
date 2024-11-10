@@ -41,15 +41,9 @@ void terminal_inhibitor(void);
 
 pid_t run_process(char *name, int index);
 
-void exit_n_sec(int n_seconds);
+void sigint_handler(int sig);
 
 void take_energy(void);
-
-void sigchld_handler(int signo);
-
-void set_sigchld_handler(void);
-
-void term_childs(const char *process_name);
 
 void close_and_exit(void);
 
@@ -60,7 +54,7 @@ int shm_sem_ready();
 struct stats stats;//creo una variabile di tipo struct statistics chiamata stats
 
 int main(int argc, char *argv[]){
-
+	signal(SIGINT, sigint_handler); //settiamo sigint_handler come handler del segnale SIGINT
 	signal(SIGCHLD, SIG_IGN); // ignoriamo i segnali sigchld della terminazione dei procesi figli
 	//shm_info_attach fa sia la get (cioè la creazione del  segmento di mem condivisa) che la attach
 	shm_info_attach(&stats.info);//shm_info_attach richiede un puntatore a puntatore ma noi gli passiamo un indirizzo di un puntatore,
@@ -331,25 +325,10 @@ int shm_sem_ready(){// controlla che il semaforo process sia pronto= abbia valor
 }
 
 
-void exit_n_sec(int n_seconds){
-    printf("Il processo master verrà terminato dopo %d secondi.\n", n_seconds);
-
-    // Aspetta n_secondi
-    sleep(n_seconds);
-
-    // Termina il processo
-    printf("Terminazione del processo master dopo %d secondi.\n", n_seconds);
-    close_and_exit();
-    exit(0);
-
-    // Questa parte del codice non verrà mai eseguita
-    printf("Questa riga non verrà mai stampata.\n");
-}
-
-void term_childs(const char *process_name) {
-    char command[256];
-    snprintf(command, sizeof(command), "killall %s", process_name);
-    system(command);  // Esegue il comando killall per terminare i processi con nome process_name
+void sigint_handler(int sig) {
+    printf("Terminazione controllata della simulazione per ricezione segnale SIGINT\n");
+	sem_setval(shm_sem_get_startid(stats.info), 7, 0);
+	close_and_exit();
 }
 
 void close_and_exit(){
@@ -357,6 +336,7 @@ void close_and_exit(){
 	process_remaining=0;
 	count_exit=0;
 	pid_t inhib_pid;
+	const char *process_name = "atom activator alimentation inhibitor";  // Nome/i del processo a cui eventualmente inviare il segnale
 	while(sem_getval(shm_sem_get_startid(stats.info), 2)>0)
 	{
 		if(sem_getval(shm_sem_get_startid(stats.info),6)==0){
@@ -370,10 +350,31 @@ void close_and_exit(){
 			count_exit=count_exit+1;
 		}
 		process_remaining=new_process_remaining;
-		if (count_exit >=5){
-			//term_childs("atom"); // lo commento tanto non ha fatto nessun effetto
+		if (count_exit ==5){
+			const char *signal = "SIGINT"; // Il segnale da inviare
 
-			break;// l'unica cosa che funziona è uscire dal ciclo, pulire le risorse e i figli rimanenti, se ce ne sono,  si eliminano da soli se non ci sono le risorse 
+			char command[256];// Costruzione del comando killall
+			snprintf(command, sizeof(command), "killall %s %s", signal, process_name);
+
+			int ret = system(command);// Esecuzione del comando
+			if (ret == -1) {
+				perror("Errore nell'esecuzione del comando killall");
+			} else {
+				printf("Segnale %s inviato a tutti i processi con nome %s\n", signal, process_name);
+			}
+		}else if(count_exit>=8){
+			printf("%d processi verranno terminati in modo non controllato\n" , sem_getval(shm_sem_get_startid(stats.info), 2));
+			const char *signal = "SIGKILL";
+			char command[256];// Costruzione del comando killall
+			snprintf(command, sizeof(command), "killall %s %s", signal, process_name);
+
+			int ret = system(command);// Esecuzione del comando
+			if (ret == -1) {
+				perror("Errore nell'esecuzione del comando killall");
+			} else {
+				printf("Segnale %s inviato a tutti i processi con nome %s\n", signal, process_name);
+			}
+			break;
 		}
 		sleep(1);
 		 

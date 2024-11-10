@@ -26,6 +26,8 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 
 int send_split_msg(int cargo_type);
 
+void sigint_handler(int sig);
+
 void close_and_exit();
 
 void nsleep(long step_nsec);
@@ -34,6 +36,7 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
     int atomic_n_to_split;
+	signal(SIGINT, sigint_handler); //settiamo sigint_handler come handler del segnale SIGINT
 	
 	shm_info_attach(&stats.info);//dobbiamo crearla in master, questo serve solo per fare attach, nel master fa create+ attach
 	//printf("shm attaccata activator.\n");
@@ -81,6 +84,10 @@ void nsleep(long step_nsec){
 		nanosleep(&nsec, &rem_nsec);
 		nsec=rem_nsec;
 	}while (errno== EINTR)*/
+}
+
+void sigint_handler(int sig) {
+	close_and_exit();
 }
 
 void close_and_exit(){

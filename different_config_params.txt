@@ -1,5 +1,6 @@
 segnale per spegnere inibitore: killall -SIGUSR1 inhibitor
 segnale per riaccendere inibitore: killall -SIGUSR2 inhibitor
+segnale per terminare la simulazione in modo controllato: killall -SIGINT master
 
 inibitore disattivato
 MELTDOWN errore nella fork in alimentation
@@ -57,15 +58,29 @@ ENERGY_EXPLODE_THRESHOLD : 40000000
 STEP_ATTIVATORE : 20000000
 
 
-nibitore attivato
-MELTDOWN errore nella fork in alimentation
+inibitore attivato
+TIME OUT, riesce a far vedere come inibitore inibisce tutte le scissioni 
 
 ENERGY_DEMAND : 10
-N_ATOMS_INIT : 1
-N_ATOM_MAX : 98
+N_ATOMS_INIT : 2000
+N_ATOM_MAX : 500
 STEP_ALIMENTAZIONE: 400000000
 MIN_N_ATOMICO : 1
-N_NEW_ATOMS : 20
+N_NEW_ATOMS : 5
 SIM_DURATION : 79
 ENERGY_EXPLODE_THRESHOLD : 400000000
-STEP_ATTIVATORE : 20000000
+STEP_ATTIVATORE : 2000000
+
+
+inibitore attivato, doppio attivazioni rispetto a configurazione di sopra
+MELTDOWN alimentazione, riesce a far vedere come inibitore inibisce tutte le scissioni ma gli atomi sono troppi e va in meltdown l'alimentazione 
+
+ENERGY_DEMAND : 10
+N_ATOMS_INIT : 2000
+N_ATOM_MAX : 500
+STEP_ALIMENTAZIONE: 400000000
+MIN_N_ATOMICO : 1
+N_NEW_ATOMS : 5
+SIM_DURATION : 79
+ENERGY_EXPLODE_THRESHOLD : 400000000
+STEP_ATTIVATORE : 1000000

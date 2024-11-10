@@ -25,8 +25,13 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 };
 
 void init_atoms(void);
+
+void sigint_handler(int sig);
+
 pid_t run_process(char *name, int index);
+
 void nsleep(long step_nsec);
+
 void close_and_exit();
 //struct data data; 
 
@@ -35,6 +40,7 @@ struct stats stats;
 int main(int argc, char *argv[]){
 	long step_nsec;
 	signal(SIGCHLD, SIG_IGN);
+	signal(SIGINT, sigint_handler); //settiamo sigint_handler come handler del segnale SIGINT
 	shm_info_attach(&stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	//printf("semaphore processi alimentation: %d \n", sem_getval(shm_sem_get_startid(stats.info), 0));
@@ -102,6 +108,10 @@ void nsleep(long step_nsec){
 		nanosleep(&nsec, &rem_nsec);
 		nsec=rem_nsec;
 	}while (errno== EINTR)*/
+}
+
+void sigint_handler(int sig) {
+	close_and_exit();
 }
 
 void close_and_exit(){

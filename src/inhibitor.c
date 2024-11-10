@@ -28,6 +28,7 @@ struct stats { //struct stats è formata da puntatori a memoria condivisa
 void close_and_exit();
 void handle_sigusr1(int sig);
 void handle_sigusr2(int sig);
+void sigint_handler(int sig);
 
 struct stats stats;
 
@@ -37,6 +38,7 @@ int main(int argc, char *argv[]){
 	// Associa i gestori dei segnali per fermare e riprendere
     signal(SIGUSR1, handle_sigusr1);  // SIGUSR1 per fermare
     signal(SIGUSR2, handle_sigusr2);  // SIGUSR2 per riprendere
+	signal(SIGINT, sigint_handler); //settiamo sigint_handler come handler del segnale SIGINT
 
 
 	if(shm_info_attach(&stats.info)==-1){
@@ -76,6 +78,10 @@ void handle_sigusr1(int sig) {
 void handle_sigusr2(int sig) {
     printf("Processo inibitore ripreso (SIGUSR2 ricevuto)...\n");
     sem_execute_semop(shm_sem_get_startid(stats.info), 6, 1, 0) ;  // Imposta  su 1 per riprendere il ciclo
+}
+
+void sigint_handler(int sig) {
+	close_and_exit();
 }
 
 void close_and_exit(){

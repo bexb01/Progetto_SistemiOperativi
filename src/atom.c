@@ -55,7 +55,7 @@ void update_waste(int waste);
 int ctrl_sem_getval(int sem_id, int sem_n);
 int ctrl_sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags);
 double max3(double a, double b, double c);
-void handle_sigterm(int sig);
+void sigint_handler(int sig);
 
 struct stats stats;
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
 	int atomic_number;
 	int user_limit=get_max_user_processes();
 	int cgroup_limit=read_pids_max();
-	signal(SIGTERM, handle_sigterm);
+	signal(SIGINT, sigint_handler); //settiamo sigint_handler come handler del segnale SIGINT
 	//int min_atomic_n = 24
     //printf("atomo creato.\n");
 	if(shm_info_attach(&stats.info)==-1){
@@ -72,6 +72,7 @@ int main(int argc, char *argv[]){
 	//printf("attach avvenuta\n");
 	//printf("atomo %d ha effettuato attach alla mem condivisa \n", getpid());
 	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
+	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 	if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 7)==0){
 		//printf("sto per morire\n");
 		close_and_exit();
@@ -88,7 +89,7 @@ int main(int argc, char *argv[]){
     atomic_number=random_atomic_n(max_atomic_n,min_atomic_n);//dovrebbe essere random_atomic_n(max_atomic_n,min_atomic_n); ma non abbiamo semafori quindi non possiamo scrivere quanti atomi ci sono o muoiono in mem cond sesnza rischiare problemi di sincronizzaz
 	//printf("numero atomico = %d \n", atomic_number);
 	int i=0;
-		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
+		
 		//printf("NUMERO ATOMI RIMANENTI ORA = %d.\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 	int split_prob;
 	
@@ -526,10 +527,8 @@ int ctrl_sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags){
 	return res;
 }
 
-void handle_sigterm(int sig) {
-    // Pulizia risorse prima di terminare
-    //printf("Processo figlio terminato (PID: %d attraverso segnale)\n", getpid());
-    close_and_exit();  // Terminazione pulita
+void sigint_handler(int sig) {
+	close_and_exit();
 }
 
 void close_and_exit(){

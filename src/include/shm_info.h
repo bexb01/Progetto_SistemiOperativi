@@ -1,7 +1,7 @@
 #ifndef OS_PROJECT_SHM_GENERAL_H
 #define OS_PROJECT_SHM_GENERAL_H
 
-
+#include <sys/types.h>
 
 typedef struct shm_inf shm_info_t; //shm_info_t adesso è l'allias di shm_info
 
