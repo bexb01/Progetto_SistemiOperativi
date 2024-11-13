@@ -38,48 +38,38 @@ void param_init(char * file_path, shm_info_t *inf){
 		if (strcmp(token, "ENERGY_DEMAND") == 0) {
 			token = strtok(NULL, delim);
     		shm_info_set_energy_demand(inf, (int)strtol(token, NULL, 10));
-			//printf("appena salvato enrgy demand %d.\n", shm_info_get_energy_demand(inf));
 		}
 		else if (strcmp(token, "N_ATOMS_INIT") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_n_atoms_init(inf, (int)strtol(token, NULL, 10));
-			//printf("appena salvato n atoms init %d.\n", shm_info_get_n_atoms_init(inf));
 		}
 		else if (strcmp(token, "N_ATOM_MAX") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_n_atom_max(inf, (int)strtol(token, NULL, 10));
-			//printf("appena salvato n atom max %d .\n", shm_info_get_n_atom_max(inf));
 		}
 		else if (strcmp(token, "STEP_ALIMENTAZIONE") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_step(inf, strtol(token, NULL, 10));
-			//printf("appena salvato  step %ld.\n", shm_info_get_step(inf));
 		}
 		else if (strcmp(token, "MIN_N_ATOMICO") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_min_n_atoms(inf, (int)strtol(token, NULL, 10));
-			//printf("appena salvato min n atomico %d.\n", shm_info_get_min_n_atoms(inf));
 		}
 		else if (strcmp(token, "N_NEW_ATOMS") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_n_new_atoms(inf, (int)strtol(token, NULL, 10));
-			//printf("appena salvato n new atoms %d.\n", shm_info_get_n_new_atoms(inf));
 		}
 		else if (strcmp(token, "SIM_DURATION") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_sim_duration(inf, (int)strtol(token, NULL, 10));
-			//printf("appena salvato sim duration %d.\n", shm_info_get_sim_duration(inf));
 		}
 		else if (strcmp(token, "ENERGY_EXPLODE_THRESHOLD") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_energy_explode_trashold(inf, (int)strtol(token, NULL, 10));
-			//printf("appena salvato energy explode threshold %d.\n", shm_info_get_energy_explode_trashold(inf));
-	
 		}	
 		else if (strcmp(token, "STEP_ATTIVATORE") == 0) {
 			token = strtok(NULL, delim);
 			shm_info_set_step_attivatore(inf, (int)strtol(token, NULL, 10));
-			//printf("appena salvato step attivatore %d.\n", shm_info_get_step_attivatore(inf));
 		}
 	}
 }
@@ -111,16 +101,15 @@ void shm_info_detach(shm_info_t *inf){
 
 void shm_info_delete(shm_info_t *inf){
 	int shm_id = shm_id_get(inf);
-	//printf("shm_id da cancellare %d", shm_id);
 	shm_delete(shm_id);
 }
 
-void shm_sem_init(shm_info_t *inf){// cera i semafori 
-	/* Semaphores */
+//crea semafori 
+void shm_sem_init(shm_info_t *inf){
 	inf->sem_start_id = sem_create(SEM_ID_READY, 15);
 	sem_setval(inf->sem_start_id, 0, 0);	// process semaphore conta i processi per far iniziare l'esecuzione
 	sem_setval(inf->sem_start_id, 1, 0);	// simulation semaphore :1 start; 0 stay
-	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi conta tutti i processi attualemnte in esecuzione, serve per la terminazione del master
+	sem_setval(inf->sem_start_id, 2, 0);    // contatore processi conta tutti i processi attualemnte in esecuzione, serve per la terminazione della simulazione
 
 	sem_setval(inf->sem_start_id, 3, 1);    // controlla accesso a energy_prod_tot 
 	sem_setval(inf->sem_start_id, 4, 1);    // controlla accesso a energy_prod_ energy_prod_last_sec
@@ -137,16 +126,6 @@ void shm_sem_init(shm_info_t *inf){// cera i semafori
 
 
 }
-
-/*int shm_sem_ready(shm_info_t *inf){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
-	// Semaphores
-	int num_process = shm_info_get_n_atoms_init(inf)+2;
-	while (sem_getval(inf->sem_start_id, 0) < num_process) {
-		printf("semaphore processi atom stampati da shm ogni secondo: %d\n", sem_getval(inf->sem_start_id, 0));
-		sleep(1);
-    }
-	return 0;
-}*/
 
 // Setters
 static void shm_info_set_id(shm_info_t *inf){inf->shm_info_id = shm_create(SHM_INFO_KEY, 0);}//shm_create usa shmget che ci restituirà l'id della mem condivisa se è 
@@ -179,7 +158,7 @@ void shm_info_set_energy_inhibitor(shm_info_t *inf, int energy_absorbed){inf->en
 
 void shm_info_set_inhibitor_pid(shm_info_t *inf, pid_t inhib_pid){inf->inhibitor_pid=inhib_pid;}
 //getters
-//void shm_info_get_id(shm_info_t +inf)
+
 int msg_q_a_a_id_get(shm_info_t *inf){return inf->msg_q_atom_activator_id;}
 int shm_id_get(shm_info_t *inf){return inf->shm_info_id;}
 

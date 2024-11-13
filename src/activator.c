@@ -17,8 +17,6 @@
 #include "include/msg_comunication.h"
 #include "../lib/semaphore.h"
 struct stats { //struct stats è formata da puntatori a memoria condivisa
-	//shm_n_atoms *atoms;
-	//shm_energy *energy; //e  molte altre da implementare
 	shm_info_t *info; //*inf = (shm_info_t *)shm_attach(shm_id); questo si trova nella funzione shm_info_attach, grazie a questo
 	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
 					  //shm_info_t 
@@ -36,25 +34,20 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
     int atomic_n_to_split;
-	signal(SIGINT, sigint_handler); //settiamo sigint_handler come handler del segnale SIGINT
+	signal(SIGINT, sigint_handler);
 	
-	shm_info_attach(&stats.info);//dobbiamo crearla in master, questo serve solo per fare attach, nel master fa create+ attach
-	//printf("shm attaccata activator.\n");
+	shm_info_attach(&stats.info);
 	long step_nsec=shm_info_get_step_attivatore(stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
-	//printf("semaphore processi activator: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
 
 	}
-	//sleep_n_sec(10);
-	//sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 	while(sem_getval(shm_sem_get_startid(stats.info), 7)>0){
 		if(sem_getval(shm_sem_get_startid(stats.info), 2)>0 ){
-			atomic_n_to_split=1;//adesso non c'è piu bisogno di specificare il numero atomico= tipo di messaggio
+			atomic_n_to_split=1;
 			send_split_msg(atomic_n_to_split);
 			nsleep(step_nsec);
-		//printf("inviato messaggio split 55.\n");
 		}
 	}
 	close_and_exit();
@@ -65,12 +58,7 @@ int send_split_msg(int atomic_n_rec){
 	pid_t activator_id = getpid();
 	int bool_split = 1;
 	msg = create_msg_comunication(atomic_n_rec,  activator_id, bool_split);
-	msg_comunication_snd(msg_q_a_a_id_get(stats.info), &msg); // do indirizzo della struct msg da inviare e col getter della coda messaggi ricevo id passandogli il valore del puntatore inf che è l'indirizzo della struttura shm, di cui ho fatto l'attach nel main, poi la funz chiamata lo mette in un puntatore per accedere all'id
-	//msg_commerce_receive(msg_out_get_id(state.general), state.id, NULL, NULL, &quantity, NULL, &status, TRUE);
-
-	/*if (status == STATUS_ACCEPTED && quantity > 0) {
-		return ship_sell(quantity, cargo_type);
-	}*/
+	msg_comunication_snd(msg_q_a_a_id_get(stats.info), &msg);
 	return 0;
 }
 
@@ -78,12 +66,7 @@ void nsleep(long step_nsec){
 	struct timespec nsec, rem_nsec;
 	nsec.tv_sec= 0;
 	nsec.tv_nsec= step_nsec;
-	nanosleep(&nsec, NULL); //senza gestione degli errori
-	/*do{ //con gestione erroriò
-		errno = EXIT_SUCCESS;
-		nanosleep(&nsec, &rem_nsec);
-		nsec=rem_nsec;
-	}while (errno== EINTR)*/
+	nanosleep(&nsec, NULL); 
 }
 
 void sigint_handler(int sig) {
@@ -92,9 +75,6 @@ void sigint_handler(int sig) {
 
 void close_and_exit(){
 	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
-	//msg_queue_remove(stats.info);
 	shm_info_detach(stats.info);
-
-	//printf("terminazione del processo ACTIVATOR.\n");
 	exit(0);
 }

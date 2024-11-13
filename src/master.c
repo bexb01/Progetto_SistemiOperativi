@@ -1,4 +1,3 @@
-//aggiungere tutte le #define  e #include non so nemmeno se servono tutte queste
 #define _GNU_SOURCE
 
 #include <stdlib.h>
@@ -18,16 +17,12 @@
 #include "include/msg_comunication.h"
 #include "include/shm_info.h"
 struct stats { //struct stats è formata da puntatori a memoria condivisa
-	//shm_n_atoms *atoms;
-	//shm_energy *energy; //e  molte altre da implementare
 	shm_info_t *info; //*inf = (shm_info_t *)shm_attach(shm_id); questo si trova nella funzione shm_info_attach, grazie a questo
 	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
 					  //shm_info_t 
 };
 
 int inhibitor_created=0;
-
-//prototipazione/ dichiarazione anticipata delle funzioni
 
 void init_atoms(void);
 
@@ -70,14 +65,12 @@ int main(int argc, char *argv[]){
 	init_activator();
 	terminal_inhibitor();
 	printf("Attesa che tutti i processi figli vengano creati...\n");
-	if(shm_sem_ready(stats.info)!= 0){// fino a quando semaforo non è ready aspettiamo
-		//printf("attendo creazione figli\n");
-		
+	if(shm_sem_ready(stats.info)!= 0){
+
 	}
-		//se siamo qui il semaforo è in stato ready	
-	int n_sec = shm_info_get_sim_duration(stats.info); //durata simulazione
+		
+	int n_sec = shm_info_get_sim_duration(stats.info);
 	printf("processi totali: %d\n", sem_getval(shm_sem_get_startid(stats.info), 0));
-	//printf("figli creati con successo\n");
 
 	shm_info_set_n_activation_last_sec(stats.info, 0);
 	shm_info_set_n_split_last_sec(stats.info, 0);
@@ -88,7 +81,7 @@ int main(int argc, char *argv[]){
 	shm_info_set_n_split_blocked(stats.info, 0);
 	shm_info_set_energy_inhibitor(stats.info, 0);
 
-	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0); //allora semaforo simulazione a 1
+	sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0);
 	printf("simulazione avviata\n");
 
 	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0) {
@@ -109,20 +102,15 @@ int main(int argc, char *argv[]){
 		take_energy();
 	}
 	close_and_exit();
-//bho
 }
 
 //crea  atomi
 void init_atoms(void){
 	int i, n_atoms;
 	pid_t pid; 
-	n_atoms = shm_info_get_n_atoms_init(stats.info); //a scopo di debugging iniziamo con 2 atomi 
-	//n_atoms=2;
-	//printf("voglio avviare  %d atomi ma ne sto avviando %d.\n", shm_info_get_n_atoms_init(stats.info), n_atoms);
+	n_atoms = shm_info_get_n_atoms_init(stats.info);
 	for(i = 0; i <  n_atoms; i++){
 		pid= run_process("./atom", i);
-		//shm_port_set_pid(state.ports, i, pid);//penso scriva in memoria condivisa i dati dei porti nel suo caso, degli atomi nel nostro, non so se ci serve
-		//printf("ho crato atomo con pid %d", pid);
 	}
 }
 
@@ -130,22 +118,22 @@ void init_atoms(void){
 //crea proc attivatore
 void init_activator(void){
 	pid_t pid;
-	pid=run_process("./activator", 1); //  ./ prima del programma indica che si trova nella directory corrente quindi master e il codice dei processi attivati da master stanno nella stessa cartella
+	pid=run_process("./activator", 1);
 }
 
 //crea alimentatore
 void init_alimentation(void){
 	pid_t pid;
-	pid=run_process("./alimentation", 1); //dice a run process di runnare proc alimentatore
+	pid=run_process("./alimentation", 1);
 }
 
 //crea proc inibitore
 void init_inhibitor(void){
 	pid_t pid;
-	pid=run_process("./inhibitor", 1); //  ./ prima del programma indica che si trova nella directory corrente quindi master e il codice dei processi attivati da master stanno nella stessa cartella
+	pid=run_process("./inhibitor", 1);
 }
 
-
+//chiedo da terminale se avviare inibitore
 void terminal_inhibitor(void){
 	char response[4];
 
@@ -166,39 +154,31 @@ void terminal_inhibitor(void){
 }
 
 //runna il processo specificato da name
-pid_t run_process(char *name, int index){ // cre il figlio con fork() e lo trasforma in un altro processo, specificato da name, attraverso execve
+pid_t run_process(char *name, int index){
 	pid_t process_pid;
 	char *args[2], buf[10];
 	process_pid = fork();
 	if (process_pid == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
-		perror("master.c: Error in fork.\n");//stampa u filedescriptor 2 che stampa su sdterr
-		fprintf(stderr, "Errore nella fork: %s\n", strerror(errno));
-        perror("Errore nella fork");
-        printf("Codice di errore errno: %d\n", errno);
 		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in master: prova a inizializzare l'esecuzione con meno atomi modificando il file confic_param.txt\n");
-		//blocco esecuzione
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
-		sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0); //allora semaforo simulazione a 1 cosi i processi che si sono creati almeno hanno la possibilità 
+		sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0);
 		close_and_exit();
 		return -1;
-	} else if (process_pid == 0) { // se figlio
-		//printf("se sono qui sono nel figlio e process pid ha restituito %d e ho pid %d", process_pid, getpid());
+	} else if (process_pid == 0) { 
 		snprintf(buf, sizeof(buf), "%d", index);
         args[0] = name;
         args[1] = NULL; 
 		int res_execve;
-		if ((res_execve=execve(name, args, NULL)) == -1) { //runno processo name attraverso execve, in teoria adesso no è piu figlio master ma è un processo "a parte"
-			perror("execve");//stampa l'ultimo messaggio di errore
-			exit(EXIT_FAILURE);   //errori execve
+		if ((res_execve=execve(name, args, NULL)) == -1) {
+			perror("execve");
+			exit(EXIT_FAILURE);
 		}
-	}else{
-		//printf("Sono il processo padre con PID %d\n", getpid());
 	}
 	return process_pid;
-	
 }
 
-void take_energy(){ 	// preleva energy demand
+// preleva energy demand
+void take_energy(){ 	
 	int energy_demand=shm_info_get_energy_demand(stats.info);
 	int energy_now=0;
 	int energ =0;
@@ -210,18 +190,16 @@ void take_energy(){ 	// preleva energy demand
 	energ = energy_now - energy_demand;
 	if(energ > (explode=(shm_info_get_energy_explode_trashold(stats.info)))){
 		printf("EXPLODE - EXPLODE - EXPLODE l'energia totale al netto di quella consumata dal master. %d è maggiore del parametro massimo %d\n",energ , explode);
-		//bloccare l'esecuzione
 		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else if(energy_demand > energy_now){
 		printf("BLACKOUT - BLACKOUT - BLACKOUT l'energia consumata dal master: %d è maggiore dell'energia totale %d\n",energy_demand , energy_now);
-		//bloccare l'esecuzione
 		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else{
-		shm_info_set_energy_prod_tot(stats.info, energ);         //aggiorna mem condivisa in mutua escl
+		shm_info_set_energy_prod_tot(stats.info, energ);   //aggiorna mem condivisa in mutua escl
 		shm_info_set_energy_cons_tot(stats.info, energy_demand);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 	}
@@ -236,33 +214,33 @@ void periodic_print(void){
 	while(sem_getval(shm_sem_get_startid(stats.info), 9)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
-	print=shm_info_get_n_split_tot(stats.info);//leggo 
-	printf("scissioni totali = %d \n" , print );//stampo scissioni totali
+	print=shm_info_get_n_split_tot(stats.info); 
+	printf("scissioni totali = %d \n" , print );
 	temp=print;
 	print=print-shm_info_get_n_split_last_sec(stats.info); //calcolo le scissioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
-	printf("scissioni ultimo secondo  = %d\n", print );//stampo scissioni ultimo secondo
+	printf("scissioni ultimo secondo  = %d\n", print );
 	shm_info_set_n_split_last_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
 
 	while(sem_getval(shm_sem_get_startid(stats.info), 8)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
-	print=shm_info_get_n_activation_tot(stats.info);//leggo
-	printf("attivazioni totali = %d\n" , print);//stampo le attivazioni totali
+	print=shm_info_get_n_activation_tot(stats.info);
+	printf("attivazioni totali = %d\n" , print);
 	temp=print;
 	print=print-shm_info_get_n_activation_last_sec(stats.info); //calcolo le attivazioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
-	printf("attivazioni ultimo secondo  = %d\n", print );//stampo attivazioni ultimo secondo
+	printf("attivazioni ultimo secondo  = %d\n", print );
 	shm_info_set_n_activation_last_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
 
 	while(sem_getval(shm_sem_get_startid(stats.info), 4)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 4, -1, 0);
-	print=shm_info_get_energy_prod(stats.info);//leggo
-	printf("energia prodotta totale = %d\n" , print);//stampo le attivazioni totali
+	print=shm_info_get_energy_prod(stats.info);
+	printf("energia prodotta totale = %d\n" , print);
 	temp=print;
 	print=print-shm_info_get_energy_prod_laste_sec(stats.info); //calcolo le attivazioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
-	printf("energia prodotta ultimo secondo  = %d\n", print );//stampo attivazioni ultimo secondo
+	printf("energia prodotta ultimo secondo  = %d\n", print );
 	shm_info_set_energy_prod_laste_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
 	
@@ -274,7 +252,7 @@ void periodic_print(void){
 	temp=print;
 	print=print-shm_info_get_waste_last_sec(stats.info);
 	printf("waste ultimo secondo  = %d\n", print );
-	shm_info_set_waste_last_sec(stats.info, temp);      //aggiorna mem condivisa in mutua escl
+	shm_info_set_waste_last_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
 
 	print=shm_info_get_energy_cons_tot(stats.info);
@@ -311,7 +289,7 @@ void periodic_print(void){
 }
 
 
-int shm_sem_ready(){// controlla che il semaforo process sia pronto= abbia valore di numatomsinit+2
+int shm_sem_ready(){// controlla che il semaforo process sia pronto
 	int num_process = shm_info_get_n_atoms_init(stats.info)+2;
 	//se inibitore attivato allora 
 	if(sem_getval(shm_sem_get_startid(stats.info), 6)==1){
@@ -380,8 +358,7 @@ void close_and_exit(){
 		 
 		
 	}
-	msg_queue_remove(stats.info); //la creazione e la rimozione delle risorse ipc la lasciamo fare esclusivamente la master
-	//shm_info_detach(stats.info);//funziona ma non bisogna fargliela fare al master perche la delete deve essere effettuata dal master e la delete funziona solo se fatta da un processo attaccato
+	msg_queue_remove(stats.info);
 	sem_delete(shm_sem_get_startid(stats.info));
 	shm_info_delete(stats.info);
 
