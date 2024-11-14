@@ -34,7 +34,7 @@ void init_inhibitor(void);
 
 void terminal_inhibitor(void);
 
-pid_t run_process(char *name, int index);
+void run_process(char *name);
 
 void sigint_handler(int sig);
 
@@ -106,31 +106,27 @@ int main(int argc, char *argv[]){
 
 //crea  atomi
 void init_atoms(void){
-	int i, n_atoms;
-	pid_t pid; 
+	int i, n_atoms; 
 	n_atoms = shm_info_get_n_atoms_init(stats.info);
 	for(i = 0; i <  n_atoms; i++){
-		pid= run_process("./atom", i);
+		run_process("./atom");
 	}
 }
 
 
 //crea proc attivatore
 void init_activator(void){
-	pid_t pid;
-	pid=run_process("./activator", 1);
+	run_process("./activator");
 }
 
 //crea alimentatore
 void init_alimentation(void){
-	pid_t pid;
-	pid=run_process("./alimentation", 1);
+	run_process("./alimentation");
 }
 
 //crea proc inibitore
 void init_inhibitor(void){
-	pid_t pid;
-	pid=run_process("./inhibitor", 1);
+	run_process("./inhibitor");
 }
 
 //chiedo da terminale se avviare inibitore
@@ -154,18 +150,16 @@ void terminal_inhibitor(void){
 }
 
 //runna il processo specificato da name
-pid_t run_process(char *name, int index){
+void run_process(char *name){
 	pid_t process_pid;
-	char *args[2], buf[10];
+	char *args[2];
 	process_pid = fork();
 	if (process_pid == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
 		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in master: prova a inizializzare l'esecuzione con meno atomi modificando il file confic_param.txt\n");
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0);
 		close_and_exit();
-		return -1;
 	} else if (process_pid == 0) { 
-		snprintf(buf, sizeof(buf), "%d", index);
         args[0] = name;
         args[1] = NULL; 
 		int res_execve;
@@ -174,7 +168,6 @@ pid_t run_process(char *name, int index){
 			exit(EXIT_FAILURE);
 		}
 	}
-	return process_pid;
 }
 
 // preleva energy demand

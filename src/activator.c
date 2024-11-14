@@ -33,7 +33,7 @@ void nsleep(long step_nsec);
 struct stats stats;
 
 int main(int argc, char *argv[]){
-    int atomic_n_to_split;
+    int split;
 	signal(SIGINT, sigint_handler);
 	
 	shm_info_attach(&stats.info);
@@ -43,21 +43,20 @@ int main(int argc, char *argv[]){
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
 
 	}
+	split=1;
 	while(sem_getval(shm_sem_get_startid(stats.info), 7)>0){
 		if(sem_getval(shm_sem_get_startid(stats.info), 2)>0 ){
-			atomic_n_to_split=1;
-			send_split_msg(atomic_n_to_split);
+			send_split_msg(split);
 			nsleep(step_nsec);
 		}
 	}
 	close_and_exit();
 }
 
-int send_split_msg(int atomic_n_rec){
+int send_split_msg(int rec){
 	struct comunication_msg msg;
-	pid_t activator_id = getpid();
 	int bool_split = 1;
-	msg = create_msg_comunication(atomic_n_rec,  activator_id, bool_split);
+	msg = create_msg_comunication(rec, bool_split);
 	msg_comunication_snd(msg_q_a_a_id_get(stats.info), &msg);
 	return 0;
 }

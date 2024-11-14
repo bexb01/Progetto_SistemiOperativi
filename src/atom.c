@@ -37,7 +37,7 @@ void update_energy(struct  atom_n_parent_child);
 int energy(struct atom_n_parent_child);
 struct  atom_n_parent_child atomic_n_to_split(int atomic_n);
 void close_and_exit();
-int rcv_msg(int atomic_n);
+int rcv_msg(void);
 int get_max_user_processes(void);
 void init_random(void);
 int read_pids_max(void);
@@ -72,11 +72,10 @@ int main(int argc, char *argv[]){
 	int max_atomic_n = shm_info_get_n_atom_max(stats.info);
 	init_random();
     atomic_number=random_atomic_n(max_atomic_n,min_atomic_n);
-	int i=0;
 	int split_prob;
 	
 	while (ctrl_sem_getval(shm_sem_get_startid(stats.info), 7)>0){
-		if(rcv_msg(atomic_number)){
+		if(rcv_msg()){
 			while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 8)==0){
 				
 			}
@@ -408,10 +407,10 @@ int random_atomic_n(int max, int min){
     return rand() % (max - min+ 1) + min;
 }
 
-int rcv_msg(int atomic_n){
+int rcv_msg(void){
 	int msg_q_id = msg_q_a_a_id_get(stats.info);
 	struct comunication_msg msg_rcv;
-	msg_comunication_rcv(msg_q_id, atomic_n, &msg_rcv.sender, &msg_rcv.bool_split);
+	msg_comunication_rcv(msg_q_id, &msg_rcv.bool_split);
 	return msg_rcv.bool_split;
 }
 

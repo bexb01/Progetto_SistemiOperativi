@@ -28,7 +28,7 @@ void init_atoms(void);
 
 void sigint_handler(int sig);
 
-pid_t run_process(char *name, int index);
+void run_process(char *name);
 
 void nsleep(long step_nsec);
 
@@ -57,22 +57,20 @@ int main(int argc, char *argv[]){
 
 void init_atoms(void){
 	int i, n_new_atoms;
-	pid_t pid;
 	n_new_atoms=shm_info_get_n_new_atoms(stats.info);
 	for(i=0; (i< n_new_atoms) && (sem_getval(shm_sem_get_startid(stats.info), 7)>0); i++){
-		pid= run_process("./atom", i);
+		run_process("./atom");
 	}
 }
 
-pid_t run_process(char *name, int index){
+void run_process(char *name){
 	pid_t process_pid;
-	char *args[2], buf[10];   
+	char *args[2];   
 	if ((process_pid = fork()) == -1) {
 		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in alimentation\n");
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	} else if (process_pid == 0) {
-	    snprintf(buf, sizeof(buf), "%d", index);
         args[0] = name;
         args[1] = NULL; 
 		if (execve(name, args, NULL) == -1) {
@@ -80,7 +78,6 @@ pid_t run_process(char *name, int index){
 			exit(EXIT_FAILURE);
 		}
 	}
-	return process_pid;
 }
 
 void nsleep(long step_nsec){

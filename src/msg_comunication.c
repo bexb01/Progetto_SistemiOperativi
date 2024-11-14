@@ -27,10 +27,9 @@ void msg_queue_remove(shm_info_t *inf){
 }
 
 //struct che compone il messaggio
-struct comunication_msg create_msg_comunication(int  receiver_atomic_n, int sender_id, int boolean_split){
+struct comunication_msg create_msg_comunication(int  rec, int boolean_split){
 	struct comunication_msg ret;
-	ret.receiver = MSG_TYPE(receiver_atomic_n);
-	ret.sender = sender_id;
+	ret.receiver = MSG_TYPE(rec);
     ret.bool_split = boolean_split;
 	return ret;
 }
@@ -42,17 +41,15 @@ void msg_comunication_snd(int msg_q_id, struct comunication_msg *msg_snd){
 	} while (ret < 0);//send del messaggio che continua a fare send fino a quando il messaggio non si è inviato
 }
 
-int msg_comunication_rcv(int msg_q_id, int type, int *sender_id, int *boolean_split){
+int msg_comunication_rcv(int msg_q_id, int *boolean_split){
 	long ret;
 	struct comunication_msg msg_rcv;
 	int i=0;
 		ret = msgrcv(msg_q_id, &msg_rcv, MSG_SIZE, 0, IPC_NOWAIT);//con ipc_nowait non è bloccante, se no gli atomi in rcv non muoiono perche rimangono in receive
 	if(ret>0){
 
-	  	*sender_id = msg_rcv.sender;
 		*boolean_split= msg_rcv.bool_split;
 	}else if (ret == -1) {
-		*sender_id = 0;
 		*boolean_split= 0;
         if (errno == ENOMSG) {
 			//coda messaggi vuota, riprovo

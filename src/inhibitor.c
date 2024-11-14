@@ -77,8 +77,6 @@ void sigint_handler(int sig) {
 void close_and_exit(){
 	sem_execute_semop(shm_sem_get_startid(stats.info), 2, -1, 0);
 	shm_info_detach(stats.info);
-
-	printf("terminazione del processo inhibitor.\n");
 	exit(0);
 
 }
