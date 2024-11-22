@@ -63,7 +63,7 @@ void run_process(char *name){
 	pid_t process_pid;
 	char *args[2];   
 	if ((process_pid = fork()) == -1) {
-		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in alimentation\n");
+		printf("------ MELTDOWN: errore nella fork in alimentation ------\n");
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	} else if (process_pid == 0) {

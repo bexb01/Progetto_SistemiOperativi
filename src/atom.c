@@ -125,8 +125,7 @@ int split(int atomic_n, int if_waste){
 	}
 	pid_t process_pid;
 	if ((process_pid = fork()) == -1) {
-		dprintf(2, "atom.c: Error in fork MELTDOWN MELTDOWN MELTDOWN .\n");
-		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in atom\n");
+		printf("------ MELTDOWN: errore nella fork in atom ------\n");
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	} else if (process_pid == 0) {
@@ -355,7 +354,7 @@ void update_energy(struct  atom_n_parent_child p_c){
 	}
 	energy_val_tot=energy_val+energy_val_tot;
 	if(energy_val_tot > explode){
-		printf("EXPLODE - EXPLODE - EXPLODE energia totale prodotta da atom al netto di quella consumata dal master %d è maggiore del parametro massimo %d\n",energy_val_tot , explode);
+		printf("-------------- EXPLODE -------------- \n energia totale prodotta da atom al netto di quella consumata dal master %d è maggiore del parametro massimo %d\n",energy_val_tot , explode);
 		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);

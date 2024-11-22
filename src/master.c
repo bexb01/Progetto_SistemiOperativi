@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
 	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0) {
 
 		if(shm_info_get_sim_duration(stats.info)<=0){
-			printf("TIME OUT TIME OUT TIMEOUT TIME OUT TIMEOUT\n");
+			printf("------------------ TIME OUT ------------------\n");
 			printf("stampa finale \n");
 			periodic_print();
 			sem_setval(shm_sem_get_startid(stats.info), 7, 0);
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
 		}else if(shm_info_get_sim_duration(stats.info)>0){
 			//alarm(1);
 			shm_info_set_sim_duration(stats.info, shm_info_get_sim_duration(stats.info)-1);
-			printf("TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE TEMPO RIMANENTE %d \n", shm_info_get_sim_duration(stats.info));
+			printf("-------------- TEMPO RIMANENTE %d --------------\n", shm_info_get_sim_duration(stats.info));
 			periodic_print();
 		}
 		sleep(1);
@@ -143,7 +143,7 @@ void run_process(char *name){
 	char *args[2];
 	process_pid = fork();
 	if (process_pid == -1) {
-		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in master: prova a inizializzare l'esecuzione con meno atomi modificando il file confic_param.txt\n");
+		printf("-------------- MELTDOWN -------------- \n errore nella fork in master: prova a inizializzare l'esecuzione con meno atomi modificando il file confic_param.txt\n");
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0);
 		close_and_exit();
@@ -169,12 +169,12 @@ void take_energy(){
 	energy_now=shm_info_get_energy_prod_tot(stats.info);
 	energ = energy_now - energy_demand;
 	if(energ > (explode=(shm_info_get_energy_explode_trashold(stats.info)))){
-		printf("EXPLODE - EXPLODE - EXPLODE l'energia totale al netto di quella consumata dal master. %d è maggiore del parametro massimo %d\n",energ , explode);
+		printf("-------------- EXPLODE-------------- \n l'energia totale al netto di quella consumata dal master. %d è maggiore del parametro massimo %d\n",energ , explode);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else if(energy_demand > energy_now){
-		printf("BLACKOUT - BLACKOUT - BLACKOUT l'energia consumata dal master: %d è maggiore dell'energia totale %d\n",energy_demand , energy_now);
+		printf("-------------- BLACKOUT -------------- \n l'energia consumata dal master: %d è maggiore dell'energia totale %d\n",energy_demand , energy_now);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
@@ -190,7 +190,14 @@ void take_energy(){
 void periodic_print(void){
 	int print;
 	int temp;
-	printf("inibitore attivo: %d\n", sem_getval(shm_sem_get_startid(stats.info), 6) );
+	temp = sem_getval(shm_sem_get_startid(stats.info), 6);
+	if(temp == 1){
+		printf("inibitore attivo\n");
+	}else if(temp == 0){
+		printf("inibitore disattivo\n");
+	}else if(temp == 2){
+		printf("inibitore non inizializzato\n");
+	}
 	while(sem_getval(shm_sem_get_startid(stats.info), 9)==0){
 	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
