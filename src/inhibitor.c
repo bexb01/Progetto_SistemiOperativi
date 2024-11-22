@@ -17,10 +17,8 @@
 #include "include/msg_comunication.h"
 #include "include/shm_info.h"
 
-struct stats { //struct stats è formata da puntatori a memoria condivisa
-	shm_info_t *info; //*inf = (shm_info_t *)shm_attach(shm_id); questo si trova nella funzione shm_info_attach, grazie a questo
-	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
-					  //shm_info_t 
+struct stats {
+	shm_info_t *info;
 };
 
 void close_and_exit();
@@ -31,8 +29,8 @@ void sigint_handler(int sig);
 struct stats stats;
 
 int main(int argc, char *argv[]){
-    signal(SIGUSR1, handle_sigusr1);  // SIGUSR1 per fermare
-    signal(SIGUSR2, handle_sigusr2);  // SIGUSR2 per riprendere
+    signal(SIGUSR1, handle_sigusr1);
+    signal(SIGUSR2, handle_sigusr2);
 	signal(SIGINT, sigint_handler);
 
 	if(shm_info_attach(&stats.info)==-1){
@@ -52,8 +50,8 @@ int main(int argc, char *argv[]){
 	}
 
 	while(sem_getval(shm_sem_get_startid(stats.info), 7)!=0){
-        while (sem_getval(shm_sem_get_startid(stats.info), 6)==0) {  // Se fermato
-            pause();  // Sospende l'esecuzione finché non arriva un segnale
+        while (sem_getval(shm_sem_get_startid(stats.info), 6)==0) {
+            pause();
         }
         sleep(1);
 	}

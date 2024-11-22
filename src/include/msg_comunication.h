@@ -6,7 +6,7 @@
 
 struct comunication_msg {
 	long receiver;
-    int bool_split;  //1 o 0 in base  a se gli diciamo di splittare? bho
+    int bool_split;
 };
 
 

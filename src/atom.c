@@ -26,10 +26,8 @@ struct atom_n_parent_child{
 	int atom_n_child;
 };
 
-struct stats { //struct stats è formata da puntatori a memoria condivisa
-	shm_info_t *info; //*inf = (shm_info_t *)shm_attach(shm_id); questo si trova nella funzione shm_info_attach, grazie a questo
-	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
-					  //shm_info_t 
+struct stats {
+	shm_info_t *info;
 };
 
 int split(int atomic_n, int if_waste);
@@ -83,10 +81,9 @@ int main(int argc, char *argv[]){
 				shm_info_set_n_activation_tot(stats.info, 1);
 				ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
 			if(atomic_number > min_atomic_n){
-				if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 6)==1){ // se inibitore è attivo
+				if(ctrl_sem_getval(shm_sem_get_startid(stats.info), 6)==1){
 					split_prob=adaptive_probability(user_limit, cgroup_limit);
-					if(split_prob ==  -1){ //-1 blocco tutto, 1 splittowaste o blocco, 0 splitto
-						//non faccio niente=blocco lo split
+					if(split_prob ==  -1){
 						while(sem_getval(shm_sem_get_startid(stats.info), 11)==0){
 						}
 						sem_execute_semop(shm_sem_get_startid(stats.info), 11, -1, 0);
@@ -94,21 +91,19 @@ int main(int argc, char *argv[]){
 						sem_execute_semop(shm_sem_get_startid(stats.info), 11, 1, 0);
 					}else if(split_prob ==  1){
 						split_prob=adaptive_probability(user_limit, cgroup_limit);
-						if((split_prob == 1) || (split_prob == -1)){ //split con waste o non split
-							//blocchiamo split
+						if((split_prob == 1) || (split_prob == -1)){
 							while(sem_getval(shm_sem_get_startid(stats.info), 11)==0){
 							}
 							sem_execute_semop(shm_sem_get_startid(stats.info), 11, -1, 0);
 							shm_info_set_n_split_blocked((stats.info), 1);
 							sem_execute_semop(shm_sem_get_startid(stats.info), 11, 1, 0);
 						}else if(split_prob == 0){
-							atomic_number=split(atomic_number, 1); //splittiamo con waste
+							atomic_number=split(atomic_number, 1);
 						}
 					}else if(split_prob ==  0){
-						//split senza waste
 						atomic_number=split(atomic_number, 0);
 					}
-				}else{ // se inibitore non è attivo splitto
+				}else{
 					atomic_number=split(atomic_number, 0);
 				}
 			}else{
@@ -140,7 +135,7 @@ int split(int atomic_n, int if_waste){
 		exit(EXIT_FAILURE);
 		} 
 		
-		if (close(p_c_pipe[1]) == -1) {// Chiudo il lato di scrittura della pipe
+		if (close(p_c_pipe[1]) == -1) {
 			 perror("write pipe child err. current atom will be closed \n");
 			 exit(EXIT_FAILURE);
     	}
@@ -154,7 +149,7 @@ int split(int atomic_n, int if_waste){
 				shm_info_set_n_split_tot(stats.info, 1);
 				ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
 
-		if (close(p_c_pipe[0]) == -1) {  // Chiudo il lato di lettura della pipe
+		if (close(p_c_pipe[0]) == -1) {
        		perror("read pipe child err. current atom will be closed\n");
     		exit(EXIT_FAILURE);
     	}
@@ -171,13 +166,13 @@ int split(int atomic_n, int if_waste){
 	} else {
         struct  atom_n_parent_child split_atom_n = atomic_n_to_split(atomic_n);
 		atomic_n = split_atom_n.atom_n_parent;
-		if (close(p_c_pipe[0]) == -1) {  // Chiudo il lato di lettura della pipe
+		if (close(p_c_pipe[0]) == -1) {
         	perror("read pipe parent err. current atom will be closed\n");
             exit(EXIT_FAILURE);
     	}
 		write(p_c_pipe[1], &split_atom_n.atom_n_child, sizeof(int));
 
-		if (close(p_c_pipe[1]) == -1) {// Chiudo il lato di scrittura della pipe
+		if (close(p_c_pipe[1]) == -1) {
        		perror("write pipe parent err. current atom will be closed\n");
         	exit(EXIT_FAILURE);
     	}
@@ -186,7 +181,7 @@ int split(int atomic_n, int if_waste){
 	}
 }
 
-int get_max_user_processes(void) { // equivalente al numero di processi con comando ulimit -u
+int get_max_user_processes(void) {
     struct rlimit limit;
     if (getrlimit(RLIMIT_NPROC, &limit) == 0) {
         return (int)limit.rlim_cur;
@@ -196,41 +191,37 @@ int get_max_user_processes(void) { // equivalente al numero di processi con coma
     }
 }
 
-// Costruisce il percorso al file cgroup del processo corrente grazie al pid
+
 void get_cgroup_path(char *path_buffer, size_t buffer_size) {
     pid_t pid = getpid();
-    snprintf(path_buffer, buffer_size, "/proc/%d/cgroup", pid);  // scrive nel buffer il path
+    snprintf(path_buffer, buffer_size, "/proc/%d/cgroup", pid);
 }
 
-// Apre il file cgroup per determinare il percorso del cgroup relativo al controller pids
 int get_pids_max_path(char *cgroup_path, char *pids_max_path, size_t buffer_size) {
-    FILE *file = fopen(cgroup_path, "r");  //apre il file in lettura
+    FILE *file = fopen(cgroup_path, "r");
     if (file == NULL) { 
         return -1;
     }
-    char line[256];  // Buffer per leggere ogni linea del file cgroup
-    int found = 0;  // Flag per indicare se abbiamo trovato il controller pids
-    char relative_path[PATH_MAX] = "";  // Buffer per il percorso relativo
-    // Legge ogni riga del file cgroup
-    while (fgets(line, sizeof(line), file)) {  // fgets legge una linea dal file e la memorizza in line, in teoria il file dovrebbe contenere solo una linea
-        char *start_path = strchr(line, '/');// Cerca la linea contenente "/"
+    char line[256];
+    int found = 0;
+    char relative_path[PATH_MAX] = "";
+    while (fgets(line, sizeof(line), file)) {
+        char *start_path = strchr(line, '/');
         if (start_path != NULL) {
-            // Rimuove il carattere di nuova riga alla fine della stringa, se presente
-            start_path[strcspn(start_path, "\n")] = '\0'; // sostituisce con il valore nullo il primo a capo
+            start_path[strcspn(start_path, "\n")] = '\0';
             strncpy(relative_path, start_path, sizeof(relative_path) - 1);
-            relative_path[sizeof(relative_path) - 1] = '\0';  // termino la stringa
-            found = 1;  // Imposta il flag su 1, indicando che abbiamo trovato il percorso
-            break;  // Esce dal loop una volta trovato il percorso relativo
+            relative_path[sizeof(relative_path) - 1] = '\0';
+            found = 1;
+            break;
         }
     }
-    fclose(file);  //Chiude il file cgroup
+    fclose(file);
     if (!found) {
         return -1;
     }
-    snprintf(pids_max_path, buffer_size, "/sys/fs/cgroup%s/pids.max", relative_path);// Costruisce il percorso al file pids.max
-    // Rimuove il carattere di nuova riga alla fine della stringa, sostituendolo con il terminatore di stringa '\0'
-    pids_max_path[strcspn(pids_max_path, "\n")] = '\0';  // strcspn calcola la lunghezza della parte iniziale della stringa che non contiene il carattere '\n'
-    return 1;  //successo
+    snprintf(pids_max_path, buffer_size, "/sys/fs/cgroup%s/pids.max", relative_path);
+    pids_max_path[strcspn(pids_max_path, "\n")] = '\0';
+    return 1;
 }
 
 int read_pids_max(void) {
@@ -252,7 +243,7 @@ int read_pids_max(void) {
         return -1;
     }
     fclose(file);
-    if (buffer[0] == 'm') {//No limit on the number of processes
+    if (buffer[0] == 'm') {
         return -1;
     } else {
         int max_processes = atoi(buffer);
@@ -262,29 +253,28 @@ int read_pids_max(void) {
 
 
 long get_free_memory(void) {
-    FILE *file = fopen("/proc/meminfo", "r");// Apre il file /proc/meminfo in modalità lettura
+    FILE *file = fopen("/proc/meminfo", "r");
     if (file == NULL) {
         perror("fopen");
         return -1; 
     }
     char line[256];
-    long free_memory_kb = -1;  // Variabile per memorizzare la memoria libera in kilobytes
-    while (fgets(line, sizeof(line), file)) {// Scansione del file /proc/meminfo per trovare la riga contenente "MemFree:"
+    long free_memory_kb = -1;
+    while (fgets(line, sizeof(line), file)) {
         if (strncmp(line, "MemFree:", 8) == 0) {
-            sscanf(line + 8, "%ld", &free_memory_kb);// Legge il valore di memoria libera dopo "MemFree:" e lo memorizza in free_memory_kb
+            sscanf(line + 8, "%ld", &free_memory_kb);
             break;
         }
     }
-    fclose(file);  // Chiude il file /proc/meminfo
+    fclose(file);
     if (free_memory_kb == -1) {
         fprintf(stderr, "Failed to find MemFree in /proc/meminfo\n");
         return -1;
     }
-    long free_memory_mb = free_memory_kb / 1024;// Converto in megabytes
+    long free_memory_mb = free_memory_kb / 1024;
     return free_memory_mb;
 }
 
-// Funzione per calcolare la probabilità adattiva, si basa sulla regola piu restringente tra pid massimi di tipo del processo o pid massimi del utente oppure sulla memoria libera
 int adaptive_probability(int user_limit, int cgroup_limit) {
 	long free_mem = get_free_memory();
 	double prob_u_l, prob_cg, param;
@@ -293,14 +283,14 @@ int adaptive_probability(int user_limit, int cgroup_limit) {
 	prob_cg=(double)active_process/cgroup_limit;
 	prob_u_l=(double)active_process/user_limit;
     if ((active_process >= user_limit) || (active_process >=cgroup_limit) || (free_mem <= 100)) {
-        return -1; // Blocco totale se abbiamo raggiunto il limite
+        return -1;
     }
     double probability = max3(prob_cg, prob_u_l, prob_mem_free);
-	double random_value = (((double)rand() / RAND_MAX) * 0.9); // Numero casuale tra 0 e 0.9
+	double random_value = (((double)rand() / RAND_MAX) * 0.9);
     if (random_value < probability) {
-        return 1; // indica che o scissione+waste oppure blocca scissione/ nel secondo caso significa che blocca scissione
+        return 1;
     }else{
-    return 0; // Indica che la scissione può avvenire/ nel secondo caso indica che scinde+waste
+    return 0;
 	}
 }
 
@@ -315,7 +305,7 @@ double max3(double a, double b, double c) {
 }
 
 
-struct  atom_n_parent_child atomic_n_to_split(int atomic_n){//splitto sempre per 2, se dispari padre difetto e figlio eccesso
+struct  atom_n_parent_child atomic_n_to_split(int atomic_n){
 	if((atomic_n % 2)==0){
 	      	struct atom_n_parent_child parent_child;
 	      	parent_child.atom_n_parent = atomic_n/2;
@@ -328,7 +318,7 @@ struct  atom_n_parent_child atomic_n_to_split(int atomic_n){//splitto sempre per
 	      	return parent_child;
 	}
 }
-void update_waste(int waste){// aggiorna le scorie in mem condivisa in mutua esclusione
+void update_waste(int waste){
 	while(ctrl_sem_getval(shm_sem_get_startid(stats.info), 5)==0){
 	}
 	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 5, -1, 0);
@@ -337,7 +327,6 @@ void update_waste(int waste){// aggiorna le scorie in mem condivisa in mutua esc
 	ctrl_sem_execute_semop(shm_sem_get_startid(stats.info), 5, 1, 0);
 }   
 
-//aggiorna energia, teneno conto dell'attività dell'inibitore
 void update_energy(struct  atom_n_parent_child p_c){
 	int energy_val_tot, energy_val, energy_to_consume, inhibitor, energy_inhibited, temp;
 	int explode=(shm_info_get_energy_explode_trashold(stats.info));
@@ -384,7 +373,6 @@ void update_energy(struct  atom_n_parent_child p_c){
 	}
 }
 
-//calcola energia prodotta
 int energy(struct atom_n_parent_child p_c){
 	int temp= p_c.atom_n_parent*p_c.atom_n_child;
 	if(p_c.atom_n_parent >= p_c.atom_n_child){
@@ -417,7 +405,7 @@ int rcv_msg(void){
 int ctrl_sem_getval(int sem_id, int sem_n){
 	int res;
 	if((res=sem_getval(sem_id, sem_n))<0){
-		exit(-1); // se fallisce la getval allora la mem cond o i semafori sono stati cancellati, quindi inutile fare close_and_exit
+		exit(-1);
 	}
 	return res;
 }
@@ -425,7 +413,7 @@ int ctrl_sem_getval(int sem_id, int sem_n){
 int ctrl_sem_execute_semop(id_t sem_id, int sem_index, int op_val, int flags){
 	int res;
 	if((res=sem_execute_semop(sem_id, sem_index, op_val, flags))<0){
-		exit(-1); // se fallisce la execute semop allora la mem cond o i semafori sono stati cancellati, quindi inutile fare close_and_exit che usa appunto semafori e mem condivisa
+		exit(-1);
 	}
 	return res;
 }

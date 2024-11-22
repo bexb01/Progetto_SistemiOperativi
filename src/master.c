@@ -16,10 +16,8 @@
 #include "../lib/semaphore.h"
 #include "include/msg_comunication.h"
 #include "include/shm_info.h"
-struct stats { //struct stats è formata da puntatori a memoria condivisa
-	shm_info_t *info; //*inf = (shm_info_t *)shm_attach(shm_id); questo si trova nella funzione shm_info_attach, grazie a questo
-	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
-					  //shm_info_t 
+struct stats {
+	shm_info_t *info;
 };
 
 int inhibitor_created=0;
@@ -46,18 +44,14 @@ void periodic_print(void);
 
 int shm_sem_ready();
 
-struct stats stats;//creo una variabile di tipo struct statistics chiamata stats
+struct stats stats;
 
 int main(int argc, char *argv[]){
-	signal(SIGINT, sigint_handler); //settiamo sigint_handler come handler del segnale SIGINT
-	signal(SIGCHLD, SIG_IGN); // ignoriamo i segnali sigchld della terminazione dei procesi figli
-	//shm_info_attach fa sia la get (cioè la creazione del  segmento di mem condivisa) che la attach
-	shm_info_attach(&stats.info);//shm_info_attach richiede un puntatore a puntatore ma noi gli passiamo un indirizzo di un puntatore,
-	                            // questo è possibile perche un punt a punt appunto contiene un indirizzo di un puntatore, quindi passare 
-								//un punt a punt oppure l'indirizzo di un punt è disciamo la stessa cosa per il chiamanate, tanto poi 
-								//la funzione chiamata salverà l'indirizzo che gli abbiamo passato nella sua istanza di puntatore a puntatore
+	signal(SIGINT, sigint_handler);
+	signal(SIGCHLD, SIG_IGN);
+	shm_info_attach(&stats.info);
 	param_init("../config_param.txt", stats.info);
-	msg_q_a_a_init(stats.info);	//gli passiamo il valore del puntatore *info che è l'indirizzo della structct shm_info_t che è dove salviamo l'id con la funzione				
+	msg_q_a_a_init(stats.info);			
 	shm_sem_init(stats.info);
 	init_atoms();
 	
@@ -104,7 +98,6 @@ int main(int argc, char *argv[]){
 	close_and_exit();
 }
 
-//crea  atomi
 void init_atoms(void){
 	int i, n_atoms; 
 	n_atoms = shm_info_get_n_atoms_init(stats.info);
@@ -114,28 +107,24 @@ void init_atoms(void){
 }
 
 
-//crea proc attivatore
 void init_activator(void){
 	run_process("./activator");
 }
 
-//crea alimentatore
 void init_alimentation(void){
 	run_process("./alimentation");
 }
 
-//crea proc inibitore
 void init_inhibitor(void){
 	run_process("./inhibitor");
 }
 
-//chiedo da terminale se avviare inibitore
 void terminal_inhibitor(void){
 	char response[4];
 
     printf("inizializzare esecuzione con Inibitore? (s/n): ");
     if (fgets(response, sizeof(response), stdin) != NULL) {
-        response[strcspn(response, "\n")] = 0; // Rimuovi il carattere di nuova linea (newline) alla fine dell'input
+        response[strcspn(response, "\n")] = 0;
         if (strcmp(response, "s") == 0 || strcmp(response, "S") == 0) {
 			sem_setval(shm_sem_get_startid(stats.info), 6, 1);
             init_inhibitor();
@@ -149,12 +138,11 @@ void terminal_inhibitor(void){
 	}
 }
 
-//runna il processo specificato da name
 void run_process(char *name){
 	pid_t process_pid;
 	char *args[2];
 	process_pid = fork();
-	if (process_pid == -1) {  // fork restituisce 0 se pid figlio, 1 se padre, -1 errore
+	if (process_pid == -1) {
 		printf("MELTDOWN MELTDOWN MELTDOWN errore nella fork in master: prova a inizializzare l'esecuzione con meno atomi modificando il file confic_param.txt\n");
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 1, 1, 0);
@@ -170,7 +158,6 @@ void run_process(char *name){
 	}
 }
 
-// preleva energy demand
 void take_energy(){ 	
 	int energy_demand=shm_info_get_energy_demand(stats.info);
 	int energy_now=0;
@@ -192,7 +179,7 @@ void take_energy(){
 		sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 		close_and_exit();
 	}else{
-		shm_info_set_energy_prod_tot(stats.info, energ);   //aggiorna mem condivisa in mutua escl
+		shm_info_set_energy_prod_tot(stats.info, energ);
 		shm_info_set_energy_cons_tot(stats.info, energy_demand);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 3, 1, 0);
 	}
@@ -210,7 +197,7 @@ void periodic_print(void){
 	print=shm_info_get_n_split_tot(stats.info); 
 	printf("scissioni totali = %d \n" , print );
 	temp=print;
-	print=print-shm_info_get_n_split_last_sec(stats.info); //calcolo le scissioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
+	print=print-shm_info_get_n_split_last_sec(stats.info);
 	printf("scissioni ultimo secondo  = %d\n", print );
 	shm_info_set_n_split_last_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
@@ -221,7 +208,7 @@ void periodic_print(void){
 	print=shm_info_get_n_activation_tot(stats.info);
 	printf("attivazioni totali = %d\n" , print);
 	temp=print;
-	print=print-shm_info_get_n_activation_last_sec(stats.info); //calcolo le attivazioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
+	print=print-shm_info_get_n_activation_last_sec(stats.info);
 	printf("attivazioni ultimo secondo  = %d\n", print );
 	shm_info_set_n_activation_last_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
@@ -232,7 +219,7 @@ void periodic_print(void){
 	print=shm_info_get_energy_prod(stats.info);
 	printf("energia prodotta totale = %d\n" , print);
 	temp=print;
-	print=print-shm_info_get_energy_prod_laste_sec(stats.info); //calcolo le attivazioni ultimo sec come quelle totali di questo secondo meno le totali dello scorso secondo
+	print=print-shm_info_get_energy_prod_laste_sec(stats.info);
 	printf("energia prodotta ultimo secondo  = %d\n", print );
 	shm_info_set_energy_prod_laste_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
@@ -282,9 +269,8 @@ void periodic_print(void){
 }
 
 
-int shm_sem_ready(){// controlla che il semaforo process sia pronto
+int shm_sem_ready(){
 	int num_process = shm_info_get_n_atoms_init(stats.info)+2;
-	//se inibitore attivato allora 
 	if(sem_getval(shm_sem_get_startid(stats.info), 6)==1){
 		num_process= num_process+1;
 	}
@@ -307,7 +293,7 @@ void close_and_exit(){
 	process_remaining=0;
 	count_exit=0;
 	pid_t inhib_pid;
-	const char *process_name = "atom activator alimentation inhibitor";  // Nome/i del processo a cui eventualmente inviare il segnale
+	const char *process_name = "atom activator alimentation inhibitor";
 	while(sem_getval(shm_sem_get_startid(stats.info), 2)>0)
 	{
 		if(sem_getval(shm_sem_get_startid(stats.info),6)==0){
@@ -322,12 +308,12 @@ void close_and_exit(){
 		}
 		process_remaining=new_process_remaining;
 		if (count_exit ==5){
-			const char *signal = "SIGINT"; // Il segnale da inviare
+			const char *signal = "SIGINT";
 
-			char command[256];// Costruzione del comando killall
+			char command[256];
 			snprintf(command, sizeof(command), "killall %s %s", signal, process_name);
 
-			int ret = system(command);// Esecuzione del comando
+			int ret = system(command);
 			if (ret == -1) {
 				perror("Errore nell'esecuzione del comando killall");
 			} else {
@@ -336,10 +322,10 @@ void close_and_exit(){
 		}else if(count_exit>=8){
 			printf("%d processi verranno terminati in modo non controllato\n" , sem_getval(shm_sem_get_startid(stats.info), 2));
 			const char *signal = "SIGKILL";
-			char command[256];// Costruzione del comando killall
+			char command[256];
 			snprintf(command, sizeof(command), "killall %s %s", signal, process_name);
 
-			int ret = system(command);// Esecuzione del comando
+			int ret = system(command);
 			if (ret == -1) {
 				perror("Errore nell'esecuzione del comando killall");
 			} else {

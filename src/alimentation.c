@@ -16,12 +16,8 @@
 #include "include/shm_info.h"
 #include "../lib/semaphore.h"
 
-struct stats { //struct stats è formata da puntatori a memoria condivisa
-	//shm_n_atoms *atoms;
-	//shm_energy *energy; //e  molte altre da implementare
-	shm_info_t *info; //*inf = (shm_info_t *)shm_attach(shm_id); questo si trova nella funzione shm_info_attach, grazie a questo
-	                  // adesso il puntatore di tipo shm_info_t punta ad un area di memoria condivisa allocata e vuota di granezza
-					  //shm_info_t 
+struct stats { 
+	shm_info_t *info;
 };
 
 void init_atoms(void);

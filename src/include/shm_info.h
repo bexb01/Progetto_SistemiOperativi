@@ -3,7 +3,7 @@
 
 #include <sys/types.h>
 
-typedef struct shm_inf shm_info_t; //shm_info_t adesso è l'allias di shm_info
+typedef struct shm_inf shm_info_t;
 
 int shm_info_attach(shm_info_t **inf);
 
@@ -16,8 +16,6 @@ void shm_info_detach(shm_info_t *inf);
 void shm_info_delete(shm_info_t *inf);
 
 void shm_sem_init(shm_info_t *inf);
-
-//int shm_sem_ready(shm_info_t *inf);
 
 static void shm_info_set_id(shm_info_t *inf);
 void shm_info_set_energy_demand(shm_info_t *inf,int energ_demand);
