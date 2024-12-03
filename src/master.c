@@ -16,7 +16,7 @@
 #include "../lib/semaphore.h"
 #include "include/msg_comunication.h"
 #include "include/shm_info.h"
-struct stats {
+struct stats {	//puntatore alla memoria
 	shm_info_t *info;
 };
 
@@ -47,10 +47,10 @@ int shm_sem_ready();
 struct stats stats;
 
 int main(int argc, char *argv[]){
-	signal(SIGINT, sigint_handler);
-	signal(SIGCHLD, SIG_IGN);
-	shm_info_attach(&stats.info);
-	param_init("../config_param.txt", stats.info);
+	signal(SIGINT, sigint_handler);	//imposta handler per segnale sigint
+	signal(SIGCHLD, SIG_IGN); 	//gestione processi terminati evita zombie
+	shm_info_attach(&stats.info); 	//collega la memoria condivisa
+	param_init("../config_param.txt", stats.info);	//legge da file i parametri di configurazione e li mette nella memoria condivisa
 	msg_q_a_a_init(stats.info);			
 	shm_sem_init(stats.info);
 	init_atoms();
@@ -87,7 +87,6 @@ int main(int argc, char *argv[]){
 			sem_setval(shm_sem_get_startid(stats.info), 7, 0);
 			close_and_exit();
 		}else if(shm_info_get_sim_duration(stats.info)>0){
-			//alarm(1);
 			shm_info_set_sim_duration(stats.info, shm_info_get_sim_duration(stats.info)-1);
 			printf("-------------- TEMPO RIMANENTE %d --------------\n", shm_info_get_sim_duration(stats.info));
 			periodic_print();
@@ -161,7 +160,7 @@ void run_process(char *name){
 void take_energy(){ 	
 	int energy_demand=shm_info_get_energy_demand(stats.info);
 	int energy_now=0;
-	int energ =0;
+	int energ=0;
 	int explode;
 	while(sem_getval(shm_sem_get_startid(stats.info), 3)==0){
 	}
@@ -303,6 +302,7 @@ void close_and_exit(){
 	const char *process_name = "atom activator alimentation inhibitor";
 	while(sem_getval(shm_sem_get_startid(stats.info), 2)>0)
 	{
+		//gestione processo inibitore
 		if(sem_getval(shm_sem_get_startid(stats.info),6)==0){
 			inhib_pid=shm_info_get_inhibitor_pid(stats.info);
 			kill(inhib_pid, SIGUSR2);
@@ -315,18 +315,19 @@ void close_and_exit(){
 		}
 		process_remaining=new_process_remaining;
 		if (count_exit ==5){
+			//killall SIGINT
 			const char *signal = "SIGINT";
-
-			char command[256];
+			char command[256];	//costruzione comando
 			snprintf(command, sizeof(command), "killall %s %s", signal, process_name);
-
-			int ret = system(command);
+			//comando che scrive su un buffer
+			int ret = system(command);	//scrivi su linea di comando
 			if (ret == -1) {
 				perror("Errore nell'esecuzione del comando killall");
 			} else {
 				printf("Segnale %s inviato a tutti i processi con nome %s\n", signal, process_name);
 			}
 		}else if(count_exit>=8){
+			//killall SIGKILL
 			printf("%d processi verranno terminati in modo non controllato\n" , sem_getval(shm_sem_get_startid(stats.info), 2));
 			const char *signal = "SIGKILL";
 			char command[256];

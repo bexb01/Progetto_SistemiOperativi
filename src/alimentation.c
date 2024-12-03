@@ -39,10 +39,9 @@ int main(int argc, char *argv[]){
 	shm_info_attach(&stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != (long)1){
-
+		sleep(1);
 	}
-	step_nsec = shm_info_get_step(stats.info);
-	int n_new_atoms=shm_info_get_n_new_atoms(stats.info);
+	step_nsec = shm_info_get_step(stats.info);	//ogni quanti nano secondi creare n atomi
 	sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 	while (sem_getval(shm_sem_get_startid(stats.info), 7)>0) { 
 		init_atoms();

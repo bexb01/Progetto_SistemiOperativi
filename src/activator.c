@@ -39,7 +39,7 @@ int main(int argc, char *argv[]){
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 2, 1, 0);
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != 1){
-
+		sleep(1);
 	}
 	split=1;
 	while(sem_getval(shm_sem_get_startid(stats.info), 7)>0){
