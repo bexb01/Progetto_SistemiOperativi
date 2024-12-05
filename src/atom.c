@@ -30,6 +30,7 @@ struct stats {
 	shm_info_t *info;
 };
 
+void signal_handler_init(void);
 int split(int atomic_n, int if_waste);
 void update_energy(struct  atom_n_parent_child);
 int energy(struct atom_n_parent_child);
@@ -54,7 +55,7 @@ int main(int argc, char *argv[]){
 	int atomic_number;
 	int user_limit=get_max_user_processes();
 	int cgroup_limit=read_pids_max();
-	signal(SIGINT, sigint_handler);
+	signal_handler_init();
 	if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
 	}
@@ -178,6 +179,15 @@ int split(int atomic_n, int if_waste){
 		update_energy(split_atom_n);
 		return atomic_n;
 	}
+}
+
+void signal_handler_init(void)
+{
+	static struct sigaction sa; 
+	bzero(&sa, sizeof(sa)); 
+
+	sa.sa_handler = sigint_handler; //setto l'handler di sigint come handler nella struct
+	sigaction(SIGINT, &sa, NULL);   // associo il segnale alla struct che contiene l'hndler
 }
 
 int get_max_user_processes(void) {

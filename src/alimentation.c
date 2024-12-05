@@ -20,6 +20,8 @@ struct stats {
 	shm_info_t *info;
 };
 
+void signal_handler_init(void);
+
 void init_atoms(void);
 
 void sigint_handler(int sig);
@@ -34,8 +36,7 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
 	long step_nsec;
-	signal(SIGCHLD, SIG_IGN);
-	signal(SIGINT, sigint_handler);
+	signal_handler_init();
 	shm_info_attach(&stats.info);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 0, 1, 0);
 	while(sem_getval(shm_sem_get_startid(stats.info), 1) != (long)1){
@@ -73,6 +74,18 @@ void run_process(char *name){
 			exit(EXIT_FAILURE);
 		}
 	}
+}
+
+void signal_handler_init(void)
+{
+	static struct sigaction sa; 
+	bzero(&sa, sizeof(sa)); 
+
+	sa.sa_handler = sigint_handler; //setto l'handler di sigint come handler nella struct
+	sigaction(SIGINT, &sa, NULL);   // associo il segnale alla struct che contiene l'hndler
+
+	sa.sa_handler = SIG_IGN;                                                          // con SIG_IGN
+	sigaction(SIGCHLD, &sa, NULL); //setto l'handler di sigchild per ignorare il segnale
 }
 
 void nsleep(long step_nsec){

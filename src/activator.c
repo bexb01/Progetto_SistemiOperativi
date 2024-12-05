@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <errno.h>
+#include <string.h>
 
 
 #include "include/shm_info.h"
@@ -19,6 +20,8 @@
 struct stats {
 	shm_info_t *info; 
 };
+
+void signal_handler_init(void);
 
 int send_split_msg(int cargo_type);
 
@@ -32,7 +35,7 @@ struct stats stats;
 
 int main(int argc, char *argv[]){
     int split;
-	signal(SIGINT, sigint_handler);
+	signal_handler_init();
 	
 	shm_info_attach(&stats.info);
 	long step_nsec=shm_info_get_step_attivatore(stats.info);
@@ -49,6 +52,15 @@ int main(int argc, char *argv[]){
 		}
 	}
 	close_and_exit();
+}
+
+void signal_handler_init(void)
+{
+	static struct sigaction sa; 
+	bzero(&sa, sizeof(sa)); 
+
+	sa.sa_handler = sigint_handler; //setto l'handler di sigint come handler nella struct
+	sigaction(SIGINT, &sa, NULL);   // associo il segnale alla struct che contiene l'hndler
 }
 
 int send_split_msg(int rec){

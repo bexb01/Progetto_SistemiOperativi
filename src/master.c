@@ -22,6 +22,8 @@ struct stats {	//puntatore alla memoria
 
 int inhibitor_created=0;
 
+void signal_handler_init(void);
+
 void init_atoms(void);
 
 void init_activator(void);
@@ -47,8 +49,7 @@ int shm_sem_ready();
 struct stats stats;
 
 int main(int argc, char *argv[]){
-	signal(SIGINT, sigint_handler);	//imposta handler per segnale sigint
-	signal(SIGCHLD, SIG_IGN); 	//gestione processi terminati evita zombie
+	signal_handler_init();//inizzializzo gli handler
 	shm_info_attach(&stats.info); 	//collega la memoria condivisa
 	param_init("../config_param.txt", stats.info);	//legge da file i parametri di configurazione e li mette nella memoria condivisa
 	msg_q_a_a_init(stats.info);			
@@ -116,6 +117,18 @@ void init_alimentation(void){
 
 void init_inhibitor(void){
 	run_process("./inhibitor");
+}
+
+void signal_handler_init(void)
+{
+	static struct sigaction sa; 
+	bzero(&sa, sizeof(sa)); 
+
+	sa.sa_handler = sigint_handler; //setto l'handler di sigint come handler nella struct
+	sigaction(SIGINT, &sa, NULL);   // associo il segnale alla struct che contiene l'hndler
+
+	sa.sa_handler = SIG_IGN;                                                          // con SIG_IGN
+	sigaction(SIGCHLD, &sa, NULL); //setto l'handler di sigchild per ignorare il segnale
 }
 
 void terminal_inhibitor(void){

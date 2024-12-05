@@ -21,17 +21,20 @@ struct stats {
 	shm_info_t *info;
 };
 
+void signal_handler_init(void);
+
 void close_and_exit();
+
 void handle_sigusr1(int sig);
+
 void handle_sigusr2(int sig);
+
 void sigint_handler(int sig);
 
 struct stats stats;
 
 int main(int argc, char *argv[]){
-    signal(SIGUSR1, handle_sigusr1);
-    signal(SIGUSR2, handle_sigusr2);
-	signal(SIGINT, sigint_handler);
+	signal_handler_init();
 
 	if(shm_info_attach(&stats.info)==-1){
 		exit(EXIT_FAILURE);
@@ -56,6 +59,21 @@ int main(int argc, char *argv[]){
         sleep(1);
 	}
 	close_and_exit();
+}
+
+void signal_handler_init(void)
+{
+	static struct sigaction sa; 
+	bzero(&sa, sizeof(sa)); 
+
+	sa.sa_handler = sigint_handler; //setto l'handler di sigint come handler nella struct
+	sigaction(SIGINT, &sa, NULL);   // associo il segnale alla struct che contiene l'hndler
+
+	sa.sa_handler = handle_sigusr1;
+	sigaction(SIGUSR1, &sa, NULL);
+
+	sa.sa_handler = handle_sigusr2;
+	sigaction(SIGUSR2, &sa, NULL);
 }
 
 void handle_sigusr1(int sig) {
