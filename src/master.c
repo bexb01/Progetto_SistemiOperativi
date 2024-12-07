@@ -175,8 +175,7 @@ void take_energy(){
 	int energy_now=0;
 	int energ=0;
 	int explode;
-	while(sem_getval(shm_sem_get_startid(stats.info), 3)==0){
-	}
+	
 	sem_execute_semop(shm_sem_get_startid(stats.info), 3, -1, 0);
 	energy_now=shm_info_get_energy_prod_tot(stats.info);
 	energ = energy_now - energy_demand;
@@ -210,8 +209,7 @@ void periodic_print(void){
 	}else if(temp == 2){
 		printf("inibitore non inizializzato\n");
 	}
-	while(sem_getval(shm_sem_get_startid(stats.info), 9)==0){
-	}
+	
 	sem_execute_semop(shm_sem_get_startid(stats.info), 9, -1, 0);
 	print=shm_info_get_n_split_tot(stats.info); 
 	printf("scissioni totali = %d \n" , print );
@@ -221,8 +219,6 @@ void periodic_print(void){
 	shm_info_set_n_split_last_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 9, 1, 0);
 
-	while(sem_getval(shm_sem_get_startid(stats.info), 8)==0){
-	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 8, -1, 0);
 	print=shm_info_get_n_activation_tot(stats.info);
 	printf("attivazioni totali = %d\n" , print);
@@ -232,8 +228,6 @@ void periodic_print(void){
 	shm_info_set_n_activation_last_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 8, 1, 0);
 
-	while(sem_getval(shm_sem_get_startid(stats.info), 4)==0){
-	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 4, -1, 0);
 	print=shm_info_get_energy_prod(stats.info);
 	printf("energia prodotta totale = %d\n" , print);
@@ -243,8 +237,6 @@ void periodic_print(void){
 	shm_info_set_energy_prod_laste_sec(stats.info, temp);
 	sem_execute_semop(shm_sem_get_startid(stats.info), 4, 1, 0);
 	
-	while(sem_getval(shm_sem_get_startid(stats.info), 5)==0){
-	}
 	sem_execute_semop(shm_sem_get_startid(stats.info), 5, -1, 0);
 	print=shm_info_get_waste_tot(stats.info);
 	printf("waste totale = %d\n" , print);
@@ -264,22 +256,17 @@ void periodic_print(void){
 	printf("processi rimanenti %d\n", sem_getval(shm_sem_get_startid(stats.info), 2));
 
 	if(inhibitor_created==1){
-		while(sem_getval(shm_sem_get_startid(stats.info), 10)==0){
-		}
+		
 		sem_execute_semop(shm_sem_get_startid(stats.info), 10, -1, 0);
 		print=shm_info_get_energy_inhibitor(stats.info);
 		printf("quantità di energia assorbita dal processo inhibitor: %d \n" , print);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 10, 1, 0);
 
-		while(sem_getval(shm_sem_get_startid(stats.info), 11)==0){
-		}
 		sem_execute_semop(shm_sem_get_startid(stats.info), 11, -1, 0);
 		print=shm_info_get_n_split_blocked(stats.info);
 		printf("numero di scissioni bloccate dal processo inhibitor: %d \n" , print);
 		sem_execute_semop(shm_sem_get_startid(stats.info), 11, 1, 0);
 
-		while(sem_getval(shm_sem_get_startid(stats.info), 12)==0){
-		}
 		sem_execute_semop(shm_sem_get_startid(stats.info), 12, -1, 0);
 		print=shm_info_get_n_waste_after_split(stats.info);
 		printf("waste creata dal processo inhibitor dopo le scissioni: %d \n" , print);
