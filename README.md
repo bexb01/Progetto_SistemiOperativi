@@ -1,4 +1,4 @@
-# SistemiOperativi2024  
+# SistemiOperativi2024 - Project Report
 
 [![C](https://img.shields.io/badge/C-Language-00599C?style=flat&logo=c&logoColor=white)]()
 [![POSIX](https://img.shields.io/badge/POSIX-API-0078D4?style=flat)]()
@@ -10,8 +10,6 @@
 [![Signal Handling](https://img.shields.io/badge/Signal%20Handling-Signals-pink?style=flat)]()
 [![IPC](https://img.shields.io/badge/IPC-Interprocess-Comm-00bfff?style=flat)]()
 [![System Programming](https://img.shields.io/badge/System%20Programming-Systems-8a2be2?style=flat)]()
-
-#Project Report
 
 ## Master
 
