@@ -8,7 +8,7 @@
 [![Semaphores](https://img.shields.io/badge/Semaphores-Synchronization-blue?style=flat)](https://en.wikipedia.org/wiki/Semaphore_(programming))
 [![Message Queues](https://img.shields.io/badge/Message%20Queues-Communication-purple?style=flat)](https://en.wikipedia.org/wiki/Message_queue)
 [![Signal Handling](https://img.shields.io/badge/Signal%20Handling-Signals-pink?style=flat)](https://en.wikipedia.org/wiki/Signal_(IPC))
-[![IPC](https://img.shields.io/badge/IPC-Interprocess-Comm-00bfff?style=flat)](https://en.wikipedia.org/wiki/Inter-process_communication)
+[![IPC](https://img.shields.io/badge/IPC-Interprocess%20Communication-00bfff?style=flat)](https://en.wikipedia.org/wiki/Inter-process_communication)
 [![System Programming](https://img.shields.io/badge/System%20Programming-Systems-8a2be2?style=flat)](https://en.wikipedia.org/wiki/System_programming)
 
 
